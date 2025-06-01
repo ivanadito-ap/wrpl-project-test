@@ -1,0 +1,129 @@
+<%- include("../partials/header.ejs") %>
+
+<!-- start coding here -->
+<div class="container d-flex align-items-center justify-content-center min-vh-100">
+    <main class="form-signin w-100 m-auto text-center">
+        <form id="registerForm" action="/api/v1/register" method="POST" novalidate>
+            <h1 class="h3 mb-3 fw-normal">Register</h1>
+
+            <% if (typeof error !== 'undefined' && error) { %>
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <%= error %>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            <% } %>
+
+            <div class="form-floating mb-2">
+                <input type="email" class="form-control" id="email" name="email" 
+                       placeholder="name@example.com" required autofocus
+                       pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$">
+                <label for="email">Email address</label>
+                <div class="invalid-feedback">
+                    Please provide a valid email address.
+                </div>
+            </div>
+            
+            <div class="form-floating mb-2">
+                <input type="password" class="form-control" id="password" name="password" 
+                       placeholder="Password" required
+                       minlength="6">
+                <label for="password">Password</label>
+                <div class="invalid-feedback">
+                    Password must be at least 6 characters long.
+                </div>
+            </div>
+
+            <div class="form-floating mb-3">
+                <input type="password" class="form-control" id="confirmPassword" 
+                       name="confirmPassword" placeholder="Password" required>
+                <label for="confirmPassword">Confirm Password</label>
+                <div class="invalid-feedback">
+                    Passwords must match.
+                </div>
+            </div>
+
+            <button class="w-100 btn btn-lg btn-primary mt-2" type="submit">Register</button>
+            <p class="mt-3">Already have an account? <a href="/login">Login</a></p>
+        </form>
+    </main>
+</div>
+
+<script>
+    // Client-side form validation
+    (function() {
+        'use strict';
+        
+        const form = document.getElementById('registerForm');
+        const password = document.getElementById('password');
+        const confirmPassword = document.getElementById('confirmPassword');
+        
+        // Validate on submit
+        form.addEventListener('submit', function(event) {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            
+            // Custom password match validation
+            if (password.value !== confirmPassword.value) {
+                confirmPassword.setCustomValidity("Passwords must match");
+                confirmPassword.classList.add('is-invalid');
+            } else {
+                confirmPassword.setCustomValidity("");
+                confirmPassword.classList.remove('is-invalid');
+            }
+            
+            form.classList.add('was-validated');
+        }, false);
+        
+        // Validate on input change
+        password.addEventListener('input', function() {
+            if (password.value.length < 6) {
+                password.setCustomValidity("Password must be at least 6 characters");
+            } else {
+                password.setCustomValidity("");
+            }
+            
+            // Re-check password match when either field changes
+            if (password.value !== confirmPassword.value) {
+                confirmPassword.setCustomValidity("Passwords must match");
+                confirmPassword.classList.add('is-invalid');
+            } else {
+                confirmPassword.setCustomValidity("");
+                confirmPassword.classList.remove('is-invalid');
+            }
+        });
+        
+        confirmPassword.addEventListener('input', function() {
+            if (password.value !== confirmPassword.value) {
+                confirmPassword.setCustomValidity("Passwords must match");
+                confirmPassword.classList.add('is-invalid');
+            } else {
+                confirmPassword.setCustomValidity("");
+                confirmPassword.classList.remove('is-invalid');
+            }
+        });
+        
+        // Add real-time validation as user types
+        const fields = form.querySelectorAll('input');
+        fields.forEach(field => {
+            field.addEventListener('input', () => {
+                if (field.checkValidity()) {
+                    field.classList.remove('is-invalid');
+                    field.classList.add('is-valid');
+                } else {
+                    field.classList.remove('is-valid');
+                }
+            });
+            
+            field.addEventListener('blur', () => {
+                if (!field.checkValidity()) {
+                    field.classList.add('is-invalid');
+                }
+            });
+        });
+    })();
+</script>
+
+<!-- Stop coding here -->
+<%- include("../partials/footer.ejs") %>

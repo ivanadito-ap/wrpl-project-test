@@ -1,0 +1,1 @@
+{"root":["./drizzle.config.ts","./api/controller/controller.ts","./api/repository/repository.ts","./api/service/service.ts","./db/country_id_seed.ts","./db/schema.ts","./error/custom_error.ts"],"version":"5.8.3"}

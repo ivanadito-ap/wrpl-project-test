@@ -1,0 +1,186 @@
+<%- include("partials/header.ejs") %>
+  <div class="d-flex flex-column flex-md-row">
+    <!-- Start of Sidebar -->
+    <div id="sidebar" class="d-flex flex-row flex-md-column flex-shrink-0 p-3 text-bg-dark w-100 w-md-auto">
+      <a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
+        <img src="/asset/JobTrek_Logo_No_Title.svg" alt="JobTrek Logo" style="height: 40px;" class="me-2">
+        <span class="fs-4">JobTrack</span> <!-- logo -->
+      </a>
+      <hr class="d-none d-md-block">
+      <ul class="nav nav-pills flex-row flex-md-column mb-auto w-100 justify-content-around justify-content-md-start">
+        <li class="nav-item">
+          <a href="/" class="nav-link text-white" aria-current="page">
+            <i class="bi bi-house-door me-2"></i> Home
+          </a>
+        </li>
+        <li>
+          <a href="/reminders" class="nav-link active">
+            <i class="bi bi-bell me-2"></i> Reminders
+          </a>
+        </li>
+        <li>
+          <a href="/contacts" class="nav-link text-white">
+            <i class="bi bi-people me-2"></i> Contacts
+          </a>
+        </li>
+        <li>
+          <a href="/documents" class="nav-link text-white">
+            <i class="bi bi-folder me-2"></i> Documents
+          </a>
+        </li>
+      </ul>
+      <hr class="d-none d-md-block">
+      <div class="dropdown ms-auto ms-md-0 sidebar-footer">
+        <a href="#" id="signout-link" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+          <img src="https://github.com/mdo.png" alt="" width="32" height="32" class="rounded-circle me-2">
+          <strong>mdo</strong>
+        </a>
+        <ul class="dropdown-menu dropdown-menu-dark text-small shadow">
+          <li><a class="dropdown-item" href="#">New project...</a></li>
+          <li><a class="dropdown-item" href="#">Settings</a></li>
+          <li><a class="dropdown-item" href="#">Profile</a></li>
+          <li><hr class="dropdown-divider"></li>
+          <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#signOutModal">Sign out</a></li>
+        </ul>
+      </div>
+    </div>
+    <!-- End of Sidebar -->
+
+<!--REMINDER-->
+  <div class="card flex-grow min-vh-100 vw-100 overflow-auto"> <!-- style="border-radius: 15px;" -->
+    <div class="card-body p-5">
+      <h6 class="mb-3">Reminders List</h6>
+      <form class="d-flex justify-content-between mb-4" action="/reminders" method="POST">
+        <div data-mdb-input-init class="form-outline flex-fill">
+          <input type="text" id="reminders" name="reminders" class="form-control form-control-lg" />
+          <label class="form-label" for="reminders">What do you need to do today?</label>
+        </div>
+        <div>
+          <button type="submit" data-mdb-button-init data-mdb-ripple-init class="btn btn-primary btn-lg ms-2">Add</button>
+        </div>
+      </form>
+      <ul class="list-group mb-0">
+
+      </ul>
+    </div>
+  </div>
+</div>
+
+    <!-- Sign Out Modal -->
+  <div class="modal fade" id="signOutModal" tabindex="-1" aria-labelledby="signOutModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="signOutModalLabel">Confirm Sign Out</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          Are you sure you want to sign out?
+        </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+
+            <!-- <form action="/logout" method="POST" style="display: inline;">
+              <button type="submit" class="btn btn-danger">Sign Out</button>
+            </form> (Can be added when backend logic for logout is ready.)-->
+
+            <a href="/login" class="btn btn-danger">Sign Out</a> <!-- Temporary redirect to /login -->
+          </div>
+      </div>
+    </div>
+  </div>
+
+  <!--Reminders functionality-->
+  <script>
+  document.addEventListener('DOMContentLoaded', function () {
+  const form = document.querySelector('form');
+  const input = document.querySelector('#reminders');
+  const list = document.querySelector('ul.list-group');
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    const text = input.value.trim();
+    if (text === '') return;
+
+    // Create new list item
+    const li = document.createElement('li');
+    li.className = 'list-group-item d-flex justify-content-between align-items-center border-start-0 border-top-0 border-end-0 border-bottom rounded-0 mb-2';
+
+    li.innerHTML = `
+    <div class="d-flex align-items-start w-100">
+      <div class="form-check me-3 pt-1">
+        <input class="form-check-input" type="checkbox" />
+      </div>
+      <div class="flex-grow-1">
+        <span style="word-break: break-word;">${text}</span>
+      </div>
+      <a href="#!" class="ms-3 mt-1 text-danger" data-mdb-tooltip-init title="Remove item">
+        <i class="fas fa-times">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+            class="bi bi-trash" viewBox="0 0 16 16">
+            <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1
+                    0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1
+                    .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1
+                    .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0
+                    0 1 0z"/>
+            <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0
+                    1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0
+                    1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0
+                    1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0
+                    1 1 1z"/>
+          </svg>
+        </i>
+      </a>
+    </div>
+  `;
+
+
+    list.appendChild(li);
+
+    // Send the data to the server using fetch
+    fetch('/reminders', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ reminders: text }),
+    })
+    .then(response => {
+      if (!response.ok) {
+        console.error('Server error:', response.status);
+      }
+      return response.json();
+    })
+    .then(data => {
+      console.log('Success:', data);
+    })
+    .catch(error => {
+      console.error('Error:', error);
+    });
+
+    input.value = '';
+  });
+
+  // Event delegation for delete and cross/uncross
+  list.addEventListener('click', function (e) {
+    // Trash icon clicked
+    if (e.target.closest('i')) {
+      const li = e.target.closest('li');
+      if (li) li.remove();
+    }
+    // Checkbox clicked
+    if (e.target.matches('input[type="checkbox"]')) {
+      const li = e.target.closest('li');
+      const textSpan = li.querySelector('.flex-grow-1 span');
+
+      if (textSpan) {
+        textSpan.classList.toggle('strikethrough', e.target.checked);
+      }
+    }
+
+
+  });
+});
+</script>
+
+<%- include("partials/footer.ejs") %>

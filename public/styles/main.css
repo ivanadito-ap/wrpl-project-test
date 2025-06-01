@@ -1,0 +1,23 @@
+body {
+    height: 100%;
+}
+
+.editable-label {
+    display: inline-block;
+    width: 250px; /* Fixed width for the label */
+    border-bottom: 2px solid #007bff; /* Underline always visible */
+    padding-bottom: 4px;
+    text-align: left; /* Keep text aligned */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  .editable-label[contenteditable="true"] {
+    outline: none; /* Remove default focus outline */
+  }
+  
+.strikethrough {
+  text-decoration: line-through;
+  word-break: break-word;
+}

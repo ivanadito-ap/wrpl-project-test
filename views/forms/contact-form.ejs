@@ -1,0 +1,119 @@
+<%- include("../partials/header.ejs") %>
+<div class="container pt-3">
+    <!-- Back Button -->
+    <a href="javascript:history.back()" class="btn btn-outline-secondary mb-3">
+      ← Back
+    </a>
+
+    <main>
+      <div class="py-5 text-center">
+        <h2>Add Important Contacts</h2>
+        <p class="lead">Fill out the form below to save important contacts related to your job applications.</p>
+      </div>
+  
+      <div class="container">
+        <div class="col-12">
+          <h4 class="mb-3">Contact Information</h4>
+          <form class="needs-validation" novalidate="" action="" method="POST">
+            <div class="row g-3">
+              <div class="col-12">
+                <label for="contactName" class="form-label">Contact Name</label>
+                <div class="input-group has-validation">
+                  <input type="text" class="form-control" id="contactName" name="contactName" placeholder="e.g., John Doe" required>
+                <div class="invalid-feedback">
+                    Contact name is required.
+                  </div>
+                </div>
+              </div>
+  
+              <div class="col-12">
+                <label for="companyName" class="form-label">Company</label>
+                <div class="input-group has-validation">
+                  <input type="text" class="form-control" id="companyName" name="companyName" placeholder="e.g., Example Inc." required>
+                  <div class="invalid-feedback">
+                    Company name is required.
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-12">
+                <label for="roleInCompany" class="form-label">Role in the Company</label>
+                <div class="input-group has-validation">
+                  <input type="text" class="form-control" id="roleInCompany" name="roleInCompany" placeholder="e.g., Human Resources" required>
+                  <div class="invalid-feedback">
+                    Position in the company is required.
+                  </div>
+                </div>
+              </div>
+  
+              <div class="col-12">
+                <label for="phoneNumber" class="form-label">Phone Number</label>
+                <div class="input-group has-validation">
+                  <input type="tel" class="form-control" id="phoneNumber" name="phoneNumber" placeholder="e.g., +1 234 567" required>
+                  <div class="invalid-feedback">
+                    Phone number is required.
+                  </div>
+                </div>
+              </div>    
+              
+              <div class="col-12">
+                <label for="contactEmail" class="form-label">Email</label>
+                <div class="input-group has-validation">
+                  <input type="email" class="form-control" id="contactEmail" name="contactEmail" placeholder="e.g., johndoe@mail.com" required>
+                  <div class="invalid-feedback">
+                    Email is required.
+                  </div>
+                </div>
+              </div>   
+
+              <div class="col-12">
+                <label for="linkedinProfile" class="form-label">LinkedIn Profile <span>(Optional, it can be link or username.)</span></label>
+                <div class="input-group has-validation">
+                  <input type="text" class="form-control" id="linkedinProfile" name="linkedinProfile" placeholder="e.g., Salman Faiz Hidayat OR www.linkedin.com/in/salmanfaizhidayat">
+                </div>
+              </div>  
+            <button class="w-100 btn btn-primary btn-lg mt-5 mb-5" type="submit">Save Contacts</button>
+          </form>
+        </div>
+      </div>
+    </main>
+</div>
+<script>
+async function handleSubmit(event) {
+  event.preventDefault();
+
+  const form = event.target;
+  const data = new FormData(form);
+  const value = Object.fromEntries(data.entries());
+
+  try {
+    const response = await fetch("/api/v1/contacts", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(value)
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      console.error("Error submitting form:", error);
+      alert("There was an error submitting the form. Please try again.");
+    } else {
+      const result = await response.json();
+      console.log("Contact saved:", result);
+      alert("Contact saved successfully!");
+      form.reset();
+    }
+  } catch (err) {
+    console.error("Network error:", err);
+    alert("Failed to send request. Please check your connection.");
+  }
+}
+
+const form = document.querySelector('form');
+form.addEventListener('submit', handleSubmit);
+</script>
+
+
+<%- include("../partials/footer.ejs") %>

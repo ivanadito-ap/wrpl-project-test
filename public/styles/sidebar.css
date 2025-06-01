@@ -1,0 +1,56 @@
+  @media (min-width: 768px) {
+      #sidebar {
+        width: 280px !important;
+        height: 100vh !important;
+        position: sticky;
+        top: 0;
+        overflow-y: auto;
+      }
+    }
+    @media (max-width: 767.98px) {
+      #sidebar {
+        flex-direction: column !important;
+        align-items: center;
+      }
+
+      #sidebar > a {
+        justify-content: center !important;
+        margin-bottom: 1rem;
+      }
+
+      #sidebar > a img {
+        margin-right: 0 !important;
+        display: block;
+        margin-bottom: 0.25rem;
+      }
+
+      #sidebar > a span {
+        display: block;
+        text-align: center;
+      }
+    }
+/*to make the navigation item 2 by 2 grid */
+  @media (max-width: 767.98px) {
+    ul.nav {
+      display: grid !important;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.5rem 1rem;
+      width: 100%;
+      padding-left: 0;
+    }
+    ul.nav > li {
+      width: 100%;
+    }
+    ul.nav > li > a {
+      text-align: center;
+      display: block;
+    }
+  }
+  /*push down the signup bottom lower a bit in smaller screen */
+  @media (max-width: 767.98px) {
+    #signout-link {
+      margin-top: 1.5rem; /* Adjust spacing */
+      width: 100%;
+      text-align: center;
+    }
+  }

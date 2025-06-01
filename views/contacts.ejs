@@ -1,0 +1,251 @@
+<%- include("partials/header.ejs") %>
+  <div class="d-flex flex-column flex-md-row">
+    <!-- Start of Sidebar -->
+    <div id="sidebar" class="d-flex flex-row flex-md-column flex-shrink-0 p-3 text-bg-dark w-100 w-md-auto">
+      <a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
+        <img src="/asset/JobTrek_Logo_No_Title.svg" alt="JobTrek Logo" style="height: 40px;" class="me-2">
+        <span class="fs-4">JobTrack</span> <!-- logo -->
+      </a>
+      <hr class="d-none d-md-block">
+      <ul class="nav nav-pills flex-row flex-md-column mb-auto w-100 justify-content-around justify-content-md-start">
+        <li class="nav-item">
+          <a href="/" class="nav-link text-white" aria-current="page">
+            <i class="bi bi-house-door me-2"></i> Home
+          </a>
+        </li>
+        <li>
+          <a href="/reminders" class="nav-link text-white">
+            <i class="bi bi-bell me-2"></i> Reminders
+          </a>
+        </li>
+        <li>
+          <a href="/contacts" class="nav-link active">
+            <i class="bi bi-people me-2"></i> Contacts
+          </a>
+        </li>
+        <li>
+          <a href="/documents" class="nav-link text-white">
+            <i class="bi bi-folder me-2"></i> Documents
+          </a>
+        </li>
+      </ul>
+      <hr class="d-none d-md-block">
+      <div class="dropdown ms-auto ms-md-0 sidebar-footer">
+        <a href="#" id="signout-link" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+          <img src="https://github.com/mdo.png" alt="" width="32" height="32" class="rounded-circle me-2">
+          <strong>mdo</strong>
+        </a>
+        <ul class="dropdown-menu dropdown-menu-dark text-small shadow">
+          <li><a class="dropdown-item" href="#">New project...</a></li>
+          <li><a class="dropdown-item" href="#">Settings</a></li>
+          <li><a class="dropdown-item" href="#">Profile</a></li>
+          <li><hr class="dropdown-divider"></li>
+          <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#signOutModal">Sign out</a></li>
+        </ul>
+      </div>
+    </div>
+    <!-- End of Sidebar -->
+
+  <div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h2 class="text-white">Contacts</h2>
+      <a href="/contact-page" class="btn btn-primary">Add Contact</a>
+    </div>
+
+    <!-- Search Bar -->
+    <div class="mb-4">
+      <div class="input-group">
+        <span class="input-group-text bg-dark text-white border-secondary">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
+            <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+          </svg>
+        </span>
+        <input type="text" id="contact-search" class="form-control bg-dark text-white border-secondary" placeholder="Search contacts..." aria-label="Search contacts">
+      </div>
+    </div>
+
+    <div class="row mt-3" id="contacts-container">
+      <!-- Cards will be inserted here -->
+    </div>
+  </div>
+</div>
+
+<!-- TEMPORARY PLACEHOLDER DATA -->
+<script>
+const exampleContacts = [
+    { name: "John Doe", company: "Acme Corp", role: "Manager", phone: "123-456-7890", email: "john.doe@example.com", linkedin: "https://linkedin.com/in/johndoe" },
+    { name: "Jane Smith", company: "Tech Solutions", role: "Developer", phone: "987-654-3210", email: "jane.smith@example.com", linkedin: "https://linkedin.com/in/janesmith" },
+    { name: "Walawe Smith", company: "Tech Solutions", role: "Developer", phone: "987-654-3210", email: "jane.smith@example.com", linkedin: "https://linkedin.com/in/janesmith" },
+    { name: "Farked Smith", company: "Tech Solutions", role: "Developer", phone: "987-654-3210", email: "jane.smith@example.com", linkedin: "https://linkedin.com/in/janesmith" },
+    { name: "Farked Smith", company: "Tech Solutions", role: "Developer", phone: "987-654-3210", email: "jane.smith@example.com", linkedin: "https://linkedin.com/in/janesmith" },
+    { name: "Farked Smith", company: "Tech Solutions", role: "Developer", phone: "987-654-3210", email: "jane.smith@example.com", linkedin: "https://linkedin.com/in/janesmith" },
+    { name: "Farked Smith", company: "Tech Solutions", role: "Developer", phone: "987-654-3210", email: "jane.smith@example.com", linkedin: "https://linkedin.com/in/janesmith" },
+    { name: "Farked Smith", company: "Tech Solutions", role: "Developer", phone: "987-654-3210", email: "jane.smith@example.com", linkedin: "https://linkedin.com/in/janesmith" },
+    { name: "Farked Smith", company: "Tech Solutions", role: "Developer", phone: "987-654-3210", email: "jane.smith@example.com", linkedin: "https://linkedin.com/in/janesmith" },
+    { name: "Manasyes Suarthiano", company: "GedaGedi Inc.", role: "Penonton", phone: "987-654-3210", email: "manasyaos@yahoo.com", linkedin: "https://linkedin.com/in/janesmith" },
+    { name: "Farked Smith", company: "Tech Solutions", role: "Developer", phone: "987-654-3210", email: "jane.smith@example.com", linkedin: "https://linkedin.com/in/janesmith" },
+    { name: "Farked Smith", company: "Tech Solutions", role: "Developer", phone: "987-654-3210", email: "jane.smith@example.com", linkedin: "https://linkedin.com/in/janesmith" }
+];
+
+function renderContacts(contacts) {
+  const container = document.getElementById("contacts-container");
+  container.innerHTML = ''; // Clear existing contacts
+
+  contacts.forEach((contact, index) => {
+    const contactIdentifier = contact.name; // Using name as an identifier
+
+    const card = `
+      <div class="col-md-4 mb-3">
+        <div class="card bg-dark text-white border-light">
+          <div class="card-body">
+            <h5 class="card-title">${contact.name}</h5>
+            <h6 class="card-subtitle mb-2 text-muted">${contact.company} - ${contact.role}</h6>
+            <p class="card-text">
+              <strong>Phone:</strong> ${contact.phone}<br>
+              <strong>Email:</strong> <a href="mailto:${contact.email}" class="text-white">${contact.email}</a>
+            </p>
+            <div class="d-flex justify-content-between">
+              <a href="${contact.linkedin}" target="_blank" class="btn btn-primary">LinkedIn</a>
+              <div>
+                <a href="/editContact?name=${encodeURIComponent(contactIdentifier)}" class="btn btn-success">Edit</a>
+                <button type="button" class="btn btn-danger delete-contact-btn"
+                        data-bs-toggle="modal"
+                        data-bs-target="#deleteContactModal"
+                        data-contact-name="${contact.name}">
+                  Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+    container.innerHTML += card;
+  });
+}
+
+function filterContacts(searchTerm) {
+    searchTerm = searchTerm.toLowerCase();
+    // Ensure exampleContacts is used for filtering
+    return exampleContacts.filter(contact =>
+        contact.name.toLowerCase().includes(searchTerm) ||
+        contact.company.toLowerCase().includes(searchTerm) ||
+        contact.role.toLowerCase().includes(searchTerm) ||
+        contact.email.toLowerCase().includes(searchTerm) ||
+        contact.phone.includes(searchTerm)
+    );
+}
+
+// --- NEW CODE FOR DELETION (FRONT END ONLY, THIS CAN BE REMOVED AFTER BACKEND IS ALREADY INTEGRATED) ---
+let contactNameToDelete = null;
+
+function performDelete() {
+  if (contactNameToDelete) {
+    const index = exampleContacts.findIndex(contact => contact.name === contactNameToDelete);
+
+    if (index > -1) {
+      exampleContacts.splice(index, 1);
+      const searchInput = document.getElementById('contact-search');
+      const currentSearchTerm = searchInput.value;
+      const filteredContacts = filterContacts(currentSearchTerm);
+      renderContacts(filteredContacts);
+
+    } else {
+      console.warn("Contact not found for deletion:", contactNameToDelete);
+    }
+    const deleteModalElement = document.getElementById('deleteContactModal');
+    const modal = bootstrap.Modal.getInstance(deleteModalElement);
+    if (modal) {
+        modal.hide();
+    }
+    contactNameToDelete = null; // Reset for the next deletion
+  }
+}
+// --- END OF NEW CODE FOR DELETION ---
+
+document.addEventListener("DOMContentLoaded", () => {
+    renderContacts(exampleContacts);
+
+    const searchInput = document.getElementById('contact-search');
+    searchInput.addEventListener('input', (e) => {
+        const filteredContacts = filterContacts(e.target.value);
+        renderContacts(filteredContacts);
+    });
+
+    // --- NEW CODE FOR MODAL HANDLING ---
+    const deleteModalElement = document.getElementById('deleteContactModal');
+    const confirmDeleteButton = document.getElementById('confirmDeleteButton');
+
+    if (deleteModalElement) {
+        deleteModalElement.addEventListener('show.bs.modal', function (event) {
+
+            const button = event.relatedTarget;
+
+            contactNameToDelete = button.getAttribute('data-contact-name');
+
+            const modalBody = deleteModalElement.querySelector('#deleteContactModalBody');
+            if (modalBody) {
+                modalBody.textContent = `Are you sure you want to delete the contact "${contactNameToDelete}"?`;
+            }
+        });
+    }
+
+    if (confirmDeleteButton) {
+        confirmDeleteButton.addEventListener('click', performDelete);
+    } else {
+        console.error("Confirm delete button with ID 'confirmDeleteButton' not found in the modal.");
+    }
+    // --- END OF NEW CODE FOR MODAL HANDLING ---
+});
+</script>
+<!-- TEMPORARY PLACEHOLDER DATA -->
+
+<!-- Sign Out Modal -->
+  <div class="modal fade" id="signOutModal" tabindex="-1" aria-labelledby="signOutModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="signOutModalLabel">Confirm Sign Out</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          Are you sure you want to sign out?
+        </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+
+            <!-- <form action="/logout" method="POST" style="display: inline;">
+              <button type="submit" class="btn btn-danger">Sign Out</button>
+            </form> (Can be added when backend logic for logout is ready.) -->
+
+            <a href="/login" class="btn btn-danger">Sign Out</a> <!-- Temporary redirect to /login -->
+          </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Contact Modal -->
+<div class="modal fade" id="deleteContactModal" tabindex="-1" aria-labelledby="deleteContactModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content bg-dark text-white">
+      <div class="modal-header border-secondary">
+        <h5 class="modal-title" id="deleteContactModalLabel">Confirm Deletion</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" id="deleteContactModalBody">
+        Are you sure you want to delete this contact?
+      </div>
+      <div class="modal-footer border-secondary">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-danger" id="confirmDeleteButton">Delete Contact</button> <!-- Temporary frontend logic to delete example data for demonstration -->
+
+        <!-- <form action="/deleteContact" method="DELETE" style="display: inline;">
+              <button type="submit" class="btn btn-danger">Delete Contact</button>
+            </form> (Can be added when backend logic for contact deletion is ready.) -->
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<%- include("partials/footer.ejs") %>
