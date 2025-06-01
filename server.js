@@ -22,7 +22,7 @@ if (!process.env.DATABASE_URL) {
   process.exit(1);
 }
 const sql = neon(process.env.DATABASE_URL);
-const db = drizzle({ client: sql });
+const db = drizzle({ client: sql }); // Pass the Neon client to Drizzle
 const controller = new Controller(db);
 
 // --- Middleware ---
@@ -55,7 +55,12 @@ const isAuthenticated = (req, res, next) => {
   if (req.session && req.session.user_id) {
     return next();
   } else {
-    res.redirect('/login'); // Or return a 401 for API routes
+    // For API routes, you might want to send a 401 status
+    if (req.originalUrl.startsWith('/api/v1')) {
+      return res.status(401).json({ message: 'Unauthorized. Please login.' });
+    }
+    // For page routes, redirect to login
+    res.redirect('/login');
   }
 };
 
@@ -68,39 +73,40 @@ app.use("/", pageRoutes); // Mounted page routes
 app.get("/", isAuthenticated, (req, res) => {
   // You can fetch user-specific data here to pass to index.ejs if needed
   // For example: const userData = await someService.getUserData(req.session.user_id);
-  res.render("index", { 
+  res.render("index", {
+    title: "Dashboard - JobTrek"
     // user: userData // Example: passing user data to the view
   });
 });
 
 // --- API Routes ---
-// Consider moving these to a separate file (e.g., routes/apiRouter.js) for better organization
-// Example:
-// import apiRouter from './routes/apiRouter.js';
-// app.use('/api/v1', apiRouter);
-// Then, in apiRouter.js, you would define these routes using controller methods.
-
-// For now, defined directly:
+// POST routes (assuming these are correct based on your controller.ts)
 app.post("/api/v1/login", controller.postLogin);
 app.post("/api/v1/register", controller.postRegister);
-
-// Protected API Routes (example, apply isAuthenticated as needed)
 app.post("/api/v1/jobs", isAuthenticated, controller.postSubmitJob);
 app.post("/api/v1/contacts", isAuthenticated, controller.postSubmitContact);
-app.post("/api/v1/reminders", isAuthenticated, (req, res) => { // Placeholder, needs implementation
+app.post("/api/v1/reminders", isAuthenticated, (req, res) => {
   console.log("Authenticated user_id:", req.session.user_id);
   console.log(req.body);
   res.status(501).json({ message: "Reminder functionality not yet implemented." });
 });
 
-app.delete("/api/v1/logout", controller.deleteLogout); // Logout itself handles session destruction
+// DELETE routes - Corrected
+// The controller.ts in the Canvas defines deleteLogout, deleteContactAPI, and deleteJobAPI.
+// Ensure these match the methods available on your compiled controller.js.
 
-app.delete("/api/v1/contacts", isAuthenticated, controller.deleteContact);
-app.delete("/api/v1/jobs", isAuthenticated, controller.deleteJob);
+// This line (98 in your original error) should work if controller.js is up-to-date
+// and controller.deleteLogout is correctly defined and exported.
+app.delete("/api/v1/logout", controller.deleteLogout);
+
+// Updated to use the ...API suffixed methods as per your controller.ts for JSON responses
+app.delete("/api/v1/contacts", isAuthenticated, controller.deleteContactAPI);
+app.delete("/api/v1/jobs", isAuthenticated, controller.deleteJobAPI);
 // app.delete("/api/v1/documents", isAuthenticated, controller.deleteDocument); // Example if re-enabled
 
-app.get("/api/v1/jobs", isAuthenticated, controller.getJobs);
-app.get("/api/v1/contacts", isAuthenticated, controller.getContacts);
+// GET routes - Assuming these call the ...API suffixed methods for JSON responses
+app.get("/api/v1/jobs", isAuthenticated, controller.getJobsAPI);
+app.get("/api/v1/contacts", isAuthenticated, controller.getContactsAPI);
 // app.get("/api/v1/documents", isAuthenticated, controller.getDocuments); // Example if re-enabled
 
 
@@ -108,15 +114,25 @@ app.get("/api/v1/contacts", isAuthenticated, controller.getContacts);
 // Catches errors from synchronous code in routes or if next(err) is called
 app.use((err, req, res, next) => {
   console.error("Unhandled error:", err.stack || err.message || err);
+  // Check if headers have already been sent
+  if (res.headersSent) {
+    return next(err); // Delegate to default Express error handler
+  }
   res.status(err.status || 500).render('error', { // Assuming you have an error.ejs page
+    title: "Error",
     message: err.message || "Something went wrong!",
-    error: process.env.NODE_ENV === 'development' ? err : {} // Only show stack in dev
+    // Only show stack in dev, ensure NODE_ENV is set appropriately
+    error: process.env.NODE_ENV === 'development' ? err : {}
   });
 });
 
 // --- 404 Handler (if no routes matched) ---
 app.use((req, res, next) => {
-  res.status(404).render('404', { url: req.originalUrl }); // Assuming a 404.ejs page
+  // Check if headers have already been sent
+  if (res.headersSent) {
+    return next(); // Should not happen if this is the last middleware
+  }
+  res.status(404).render('404', { title: "Page Not Found", url: req.originalUrl }); // Assuming a 404.ejs page
 });
 
 

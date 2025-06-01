@@ -202,7 +202,7 @@
                                 </p>
                                 ${app.additionalNotes ? `<p class="card-text small fst-italic">Notes: ${app.additionalNotes}</p>` : ''}
                                 <div class="mt-auto pt-2 d-flex justify-content-between">
-                                    <a href="/viewJobDetail?companyName=${encodeURIComponent(app.companyName)}&appliedPosition=${encodeURIComponent(app.appliedPosition)}&dateApplied=${dateAppliedFormatted}" class="btn btn-sm btn-outline-light">View More</a>
+                                        <a href="/viewJobDetail?companyName=${encodeURIComponent(app.companyName)}&appliedPosition=${encodeURIComponent(app.appliedPosition)}&dateApplied=${dateAppliedFormatted}" class="btn btn-sm btn-outline-light">View More</a>
                                     <button type="button" class="btn btn-sm btn-outline-danger delete-application-btn"
                                             data-bs-toggle="modal" data-bs-target="#deleteApplicationModal"
                                             data-applied-position="${app.appliedPosition}" data-company-name="${app.companyName}"

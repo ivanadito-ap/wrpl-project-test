@@ -122,5 +122,23 @@ export class Service {
         });
         this.repository = new Repository(db);
     }
+    // Add this to your Service class in server/api/service/service.ts
+    getJobDetails(user_id, company_name, applied_position, date_applied) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const job = yield this.repository.getJobDetails(user_id, company_name, applied_position, date_applied);
+                if (job) {
+                    return { message: 'success', status: 200, isError: false, data: job };
+                }
+                else {
+                    return { message: 'Job not found', status: 404, isError: true, data: null };
+                }
+            }
+            catch (error) {
+                console.error("Error in service fetching job details:", error);
+                return { message: error.message || 'Error fetching job details', status: 500, isError: true, data: null };
+            }
+        });
+    }
 }
 ;

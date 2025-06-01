@@ -6,9 +6,9 @@ import { Request, Response, NextFunction } from "express";
 import { z } from "zod";
 import 'express-session';
 
-// Note: Imports for countryIds and applicationStatusEnum are removed from here
-// as they are only needed if the controller re-renders forms with dropdowns on error.
-// For the current setup (JSON errors for fetch, redirect on success), they are not directly used by the controller.
+// Corrected: Ensure these imports are at the top level
+import { applicationStatusEnum } from '../../db/schema.js';
+import { countryIds } from '../../db/country_id_seed.js';
 
 declare module 'express-session' {
   interface SessionData {
@@ -26,35 +26,29 @@ const postSubmitJobSchema = z.object({
   appliedPosition: z.string().nonempty({ message: "Applied position is required."}),
   companyAddress: z.string().optional(),
   dateApplied: z.string().refine((val) => val && !isNaN(Date.parse(val)), { message: "Valid date of application is required." }),
-  
-  // MODIFIED: Added z.preprocess to handle potential string inputs for country and status
   country: z.preprocess(
     (val) => {
       if (typeof val === 'string' && val.trim() !== '') return parseInt(val, 10);
       if (typeof val === 'number') return val;
-      return undefined; // Let z.number handle 'undefined' to trigger required_error
+      return undefined;
     },
-    z.number({ 
-      required_error: "Country is required.", 
-      invalid_type_error: "Country must be a valid number." 
+    z.number({
+      required_error: "Country is required.",
+      invalid_type_error: "Country must be a valid number."
     })
   ),
-  
   companyWebsite: z.string().url({ message: "Invalid URL format." }).optional().or(z.literal('')),
-  
   status: z.preprocess(
     (val) => {
       if (typeof val === 'string' && val.trim() !== '') return parseInt(val, 10);
       if (typeof val === 'number') return val;
-      return undefined; // Let z.number handle 'undefined'
+      return undefined;
     },
-    z.number({ 
-      required_error: "Status is required.", 
-      invalid_type_error: "Status must be a valid number." 
+    z.number({
+      required_error: "Status is required.",
+      invalid_type_error: "Status must be a valid number."
     })
   ),
-  // END MODIFICATION
-  
   additional_notes: z.string().optional(),
 });
 
@@ -109,11 +103,19 @@ export class Controller {
         return;
       }
       console.log(`Login failed: ${serviceResponse.message}`);
-      res.status(serviceResponse.status).json({ message: serviceResponse.message });
+      // It's better to render an error page or send specific error messages for login failures
+      // For now, redirecting back to login with a query parameter for the message
+      res.redirect(`/login?error=${encodeURIComponent(serviceResponse.message)}`);
     } catch (error: any) {
       const errorMessage = error instanceof z.ZodError ? error.flatten().fieldErrors : { form: error.message };
       console.log(`Login validation/controller error:`, errorMessage);
-      res.status(400).json({ message: "Login validation failed", details: errorMessage });
+      // Construct a user-friendly error message string from Zod errors
+      let errorMsgForQuery = "Login validation failed.";
+      if (error instanceof z.ZodError) {
+          const fieldErrors = Object.values(error.flatten().fieldErrors).flat().join(' ');
+          if (fieldErrors) errorMsgForQuery = fieldErrors;
+      }
+      res.redirect(`/login?error=${encodeURIComponent(errorMsgForQuery)}`);
     }
   };
 
@@ -129,15 +131,22 @@ export class Controller {
 
       if (!serviceResponse.isError) {
         console.log(`Registration successful for ${validationResult.email}, redirecting to /login`);
-        res.redirect('/login');
+        // Optionally, add a success message to the login page
+        res.redirect('/login?message=Registration successful. Please login.');
         return;
       }
       console.log(`Registration failed: ${serviceResponse.message}`);
-      res.status(serviceResponse.status).json({ message: serviceResponse.message });
+      // Redirect back to register page with error message
+      res.redirect(`/register?error=${encodeURIComponent(serviceResponse.message)}`);
     } catch (error: any) {
       const errorMessage = error instanceof z.ZodError ? error.flatten().fieldErrors : { form: error.message };
       console.log(`Registration validation/controller error:`, errorMessage);
-      res.status(400).json({ message: "Registration validation failed", details: errorMessage });
+      let errorMsgForQuery = "Registration validation failed.";
+       if (error instanceof z.ZodError) {
+          const fieldErrors = Object.values(error.flatten().fieldErrors).flat().join(' ');
+          if (fieldErrors) errorMsgForQuery = fieldErrors;
+      }
+      res.redirect(`/register?error=${encodeURIComponent(errorMsgForQuery)}`);
     }
   };
 
@@ -149,14 +158,19 @@ export class Controller {
       if (!validationResult.success) {
         const errors = validationResult.error.flatten().fieldErrors;
         console.error("Job submission Zod validation failed:", errors);
-        res.status(400).json({
-            message: "Validation failed. Please check your input.",
-            details: errors
+        // Instead of JSON, re-render the form with errors and existing data
+        res.status(400).render("forms/job-info-form", {
+            title: "Add New Job Application - Error",
+            countries: countryIds, // Make sure countryIds is available
+            statuses: applicationStatusEnum.enumValues, // Make sure applicationStatusEnum is available
+            formData: req.body, // Pass back the submitted data
+            errors: errors,     // Pass the Zod errors
+            message: "Validation failed. Please check your input." // General message
         });
         return;
       }
-      
-      const data = validationResult.data; // data.country and data.status are now numbers
+
+      const data = validationResult.data;
 
       const serviceResponse = await this.service.postSubmitJob(
         req.session.user_id!,
@@ -164,29 +178,43 @@ export class Controller {
         data.appliedPosition,
         data.companyAddress || null,
         data.dateApplied,
-        String(data.country),       // Service expects string for ID
+        String(data.country),
         data.companyWebsite || null,
-        String(data.status),        // Service expects string for ID
+        String(data.status),
         data.additional_notes || null
       );
-      
+
       if (!serviceResponse.isError) {
         console.log(`Job "${data.appliedPosition}" at "${data.companyName}" submitted successfully. Redirecting to /.`);
-        res.redirect('/'); 
-        return; 
+        res.redirect('/');
+        return;
       }
-      
+
       console.error(`Service error submitting job: ${serviceResponse.message}`);
-      res.status(serviceResponse.status || 500).json({
+      // Re-render form with service error
+      res.status(serviceResponse.status || 500).render("forms/job-info-form", {
+          title: "Add New Job Application - Error",
+          countries: countryIds,
+          statuses: applicationStatusEnum.enumValues,
+          formData: req.body,
+          errors: { form: serviceResponse.message }, // Show service error as a form-level error
           message: serviceResponse.message || "Could not submit job application due to a server error."
       });
 
     } catch (error:any) {
       console.error(`Unexpected error in postSubmitJob:`, error);
-      if (error instanceof z.ZodError) { // This handles sessionSchema parse error
-        res.status(400).json({ message: "Invalid request data.", details: error.flatten().fieldErrors });
+      if (error instanceof z.ZodError && error.issues.some(issue => issue.path.includes('user_id'))) {
+        res.status(401).render("error", { message: "Unauthorized. Please login." });
       } else {
-        next(error); 
+        // Render a generic error page or the form with a generic error
+        res.status(500).render("forms/job-info-form", {
+            title: "Add New Job Application - Error",
+            countries: countryIds,
+            statuses: applicationStatusEnum.enumValues,
+            formData: req.body,
+            errors: { form: "An unexpected error occurred." },
+            message: "An unexpected error occurred."
+        });
       }
     }
   };
@@ -199,9 +227,12 @@ export class Controller {
       if (!validationResult.success) {
         const errors = validationResult.error.flatten().fieldErrors;
         console.error("Contact submission Zod validation failed:", errors);
-        res.status(400).json({
-            message: "Validation failed. Please check your input.",
-            details: errors
+        // Re-render the contact form with errors
+        res.status(400).render("forms/contact-form", {
+            title: "Add New Contact - Error",
+            formData: req.body,
+            errors: errors,
+            message: "Validation failed. Please check your input."
         });
         return;
       }
@@ -217,14 +248,31 @@ export class Controller {
         data.companyName
       );
 
-      console.log(serviceResponse.message);
-      res.status(serviceResponse.status).json({ message: serviceResponse.message, data: serviceResponse.data });
+      if (!serviceResponse.isError) {
+          console.log(`Contact "${data.name}" submitted successfully. Redirecting to /contacts.`);
+          res.redirect('/contacts'); // Redirect to contacts list page
+          return;
+      }
+      
+      console.error(`Service error submitting contact: ${serviceResponse.message}`);
+      res.status(serviceResponse.status || 500).render("forms/contact-form", {
+          title: "Add New Contact - Error",
+          formData: req.body,
+          errors: { form: serviceResponse.message },
+          message: serviceResponse.message || "Could not submit contact due to a server error."
+      });
+
     } catch (error:any) {
       console.error(`Unexpected error in postSubmitContact:`, error);
-      if (error instanceof z.ZodError) {
-        res.status(400).json({ message: "Invalid request data.", details: error.flatten().fieldErrors });
+       if (error instanceof z.ZodError && error.issues.some(issue => issue.path.includes('user_id'))) {
+        res.status(401).render("error", { message: "Unauthorized. Please login." });
       } else {
-        next(error);
+        res.status(500).render("forms/contact-form", {
+            title: "Add New Contact - Error",
+            formData: req.body,
+            errors: { form: "An unexpected error occurred." },
+            message: "An unexpected error occurred."
+        });
       }
     }
   };
@@ -235,27 +283,29 @@ export class Controller {
         req.session.destroy((err) => {
           if (err) {
             console.log('Failed to destroy session during logout:', err);
-            res.status(500).json({ message: 'Logout failed due to server error' });
+            // Don't send JSON if it's a page interaction, redirect or render error page
+            res.status(500).render("error", { message: "Logout failed due to server error." });
           } else {
             console.log('User logged out successfully, session destroyed.');
-            res.clearCookie('connect.sid');
-            res.status(200).json({ message: 'User logged out successfully' });
+            res.clearCookie('connect.sid'); // Ensure the session cookie is cleared
+            res.redirect('/login?message=Logged out successfully.');
           }
         });
       } else {
         console.log('Logout attempt with no active session.');
-        res.status(200).json({ message: 'No active session to log out from, but considered logged out.' });
+        res.redirect('/login?message=No active session to log out from.');
       }
     } catch (error:any) {
         console.log('Error during logout process:', error.message);
-        res.status(400).json({ message: "Error during logout", details: error.message });
+        res.status(400).render("error", { message: "Error during logout", details: error.message });
     }
   };
 
-  deleteContact = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  // API endpoint for deleting contact (called via fetch from client-side typically)
+  deleteContactAPI = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       sessionSchema.parse(req.session);
-      const validationResult = deleteContactSchema.parse(req.body);
+      const validationResult = deleteContactSchema.parse(req.body); // Assuming email is in body
 
       const serviceResponse = await this.service.deleteContact(
         req.session.user_id!,
@@ -267,15 +317,17 @@ export class Controller {
       if (error instanceof z.ZodError) {
         res.status(400).json({ message: "Invalid request data.", details: error.flatten().fieldErrors });
       } else {
-        next(error);
+        console.error("Error in deleteContactAPI:", error);
+        res.status(500).json({ message: "Server error deleting contact." });
       }
     }
   };
 
-  deleteJob = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  // API endpoint for deleting job (called via fetch from client-side typically)
+  deleteJobAPI = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       sessionSchema.parse(req.session);
-      const validationResult = deleteJobSchema.parse(req.body);
+      const validationResult = deleteJobSchema.parse(req.body); // Assuming identifiers are in body
 
       const serviceResponse = await this.service.deleteJob(
         req.session.user_id!,
@@ -289,35 +341,86 @@ export class Controller {
       if (error instanceof z.ZodError) {
         res.status(400).json({ message: "Invalid request data.", details: error.flatten().fieldErrors });
       } else {
-        next(error);
+        console.error("Error in deleteJobAPI:", error);
+        res.status(500).json({ message: "Server error deleting job." });
       }
     }
   };
 
-  getJobs = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  // API endpoint for getting jobs (called via fetch from client-side)
+  getJobsAPI = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       sessionSchema.parse(req.session);
       const serviceResponse = await this.service.getJobs(req.session.user_id!);
       res.status(serviceResponse.status).json({ message: serviceResponse.message, data: serviceResponse.data });
     } catch (error:any) {
       if (error instanceof z.ZodError) {
-        res.status(400).json({ message: "Invalid session.", details: error.flatten().fieldErrors });
+        res.status(401).json({ message: "Unauthorized or invalid session." });
       } else {
-        next(error);
+        console.error("Error in getJobsAPI:", error);
+        res.status(500).json({ message: "Server error fetching jobs." });
       }
     }
   };
 
-  getContacts = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  // API endpoint for getting contacts (called via fetch from client-side)
+  getContactsAPI = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       sessionSchema.parse(req.session);
       const serviceResponse = await this.service.getContacts(req.session.user_id!);
       res.status(serviceResponse.status).json({ message: serviceResponse.message, data: serviceResponse.data });
     } catch (error:any) {
       if (error instanceof z.ZodError) {
-        res.status(400).json({ message: "Invalid session.", details: error.flatten().fieldErrors });
+        res.status(401).json({ message: "Unauthorized or invalid session." });
       } else {
-        next(error);
+        console.error("Error in getContactsAPI:", error);
+        res.status(500).json({ message: "Server error fetching contacts." });
+      }
+    }
+  };
+
+  // Controller method for rendering the job detail page
+  renderJobDetailPage = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      sessionSchema.parse(req.session);
+      const user_id = req.session.user_id!;
+
+      const { companyName, appliedPosition, dateApplied } = req.query;
+
+      if (!companyName || !appliedPosition || !dateApplied ||
+          typeof companyName !== 'string' ||
+          typeof appliedPosition !== 'string' ||
+          typeof dateApplied !== 'string') {
+        res.status(400).render("error", { title: "Error", message: "Missing or invalid job identifiers in query parameters." });
+        return;
+      }
+
+      const serviceResponse = await this.service.getJobDetails(user_id, companyName, appliedPosition, dateApplied);
+
+      if (serviceResponse.isError || !serviceResponse.data) {
+        res.status(serviceResponse.status).render("error", { title: "Error", message: serviceResponse.message || "Job details not found." });
+        return;
+      }
+      
+      const jobData = {
+          ...serviceResponse.data,
+          statusText: serviceResponse.data.statusId, 
+          countryName: serviceResponse.data.countryName || 'N/A'
+      };
+
+      res.render("job-detail", {
+          title: "Job Details",
+          job: jobData,
+          statuses: applicationStatusEnum.enumValues, // Now correctly in scope
+          countries: countryIds  // Now correctly in scope
+      });
+
+    } catch (error:any) {
+      console.error(`Unexpected error in renderJobDetailPage:`, error);
+      if (error instanceof z.ZodError && error.issues.some(issue => issue.path.includes('user_id'))) {
+        res.status(401).render("error", { title: "Error", message: "Unauthorized. Please login."});
+      } else {
+        res.status(500).render("error", { title: "Error", message: "An unexpected error occurred while fetching job details."});
       }
     }
   };

@@ -87,15 +87,7 @@ router.get('/documents', isAuthenticated, (req, res) => {
   });
 });
 
-router.get("/viewJobDetail", isAuthenticated, async (req, res) => {
-  const { companyName, appliedPosition, dateApplied } = req.query;
-  res.render("job-detail", {
-    title: "Job Details",
-    companyName,
-    appliedPosition,
-    dateApplied
-  });
-});
+router.get("/viewJobDetail", isAuthenticated, controller.renderJobDetailPage);
 
 // Route for displaying contacts page
 router.get("/contacts", isAuthenticated, (req, res) => {
@@ -116,5 +108,5 @@ router.get("/contact-page", isAuthenticated, (req, res) => {
 
 // Your API routes (POST /api/v1/contacts, GET /api/v1/contacts, DELETE /api/v1/contacts)
 // are handled in server.js via the controller.
-
+router.get("/viewJobDetail", isAuthenticated, controller.renderJobDetailPage);
 export default router;
