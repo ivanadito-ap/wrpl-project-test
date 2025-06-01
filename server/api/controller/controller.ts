@@ -2,9 +2,13 @@
 
 import { Service, ServiceResponse, UserDetails } from '../service/service.js';
 import { DbType } from "../repository/repository.js";
-import { Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
 import { z } from "zod";
 import 'express-session';
+
+// Note: Imports for countryIds and applicationStatusEnum are removed from here
+// as they are only needed if the controller re-renders forms with dropdowns on error.
+// For the current setup (JSON errors for fetch, redirect on success), they are not directly used by the controller.
 
 declare module 'express-session' {
   interface SessionData {
@@ -18,13 +22,39 @@ const sessionSchema = z.object({
 });
 
 const postSubmitJobSchema = z.object({
-  companyName: z.string().nonempty(),
-  appliedPosition: z.string().nonempty(),
+  companyName: z.string().nonempty({ message: "Company name is required."}),
+  appliedPosition: z.string().nonempty({ message: "Applied position is required."}),
   companyAddress: z.string().optional(),
-  dateApplied: z.string().refine((val) => !isNaN(Date.parse(val)), { message: "Invalid date format for dateApplied" }), // Ensure it's a valid date string
-  country: z.number(), // Frontend sends as number, controller converts to string for service
-  companyWebsite: z.string().url().optional().or(z.literal('')), // Allow URL or empty string for optional
-  status: z.number(),   // Frontend sends as number, controller converts to string for service
+  dateApplied: z.string().refine((val) => val && !isNaN(Date.parse(val)), { message: "Valid date of application is required." }),
+  
+  // MODIFIED: Added z.preprocess to handle potential string inputs for country and status
+  country: z.preprocess(
+    (val) => {
+      if (typeof val === 'string' && val.trim() !== '') return parseInt(val, 10);
+      if (typeof val === 'number') return val;
+      return undefined; // Let z.number handle 'undefined' to trigger required_error
+    },
+    z.number({ 
+      required_error: "Country is required.", 
+      invalid_type_error: "Country must be a valid number." 
+    })
+  ),
+  
+  companyWebsite: z.string().url({ message: "Invalid URL format." }).optional().or(z.literal('')),
+  
+  status: z.preprocess(
+    (val) => {
+      if (typeof val === 'string' && val.trim() !== '') return parseInt(val, 10);
+      if (typeof val === 'number') return val;
+      return undefined; // Let z.number handle 'undefined'
+    },
+    z.number({ 
+      required_error: "Status is required.", 
+      invalid_type_error: "Status must be a valid number." 
+    })
+  ),
+  // END MODIFICATION
+  
   additional_notes: z.string().optional(),
 });
 
@@ -32,9 +62,9 @@ const postSubmitContactSchema = z.object({
   name: z.string().nonempty("Name is required"),
   companyName: z.string().nonempty("Company name is required"),
   roleInCompany: z.string().nonempty(),
-  phoneNumber: z.string().nonempty(), // Consider more specific validation if needed
+  phoneNumber: z.string().nonempty(),
   contactEmail: z.string().email(),
-  linkedinProfile: z.string().url().optional().or(z.literal('')), // Allow URL or empty string for optional
+  linkedinProfile: z.string().url({ message: "Invalid URL format." }).optional().or(z.literal('')),
 });
 
 const postLoginSchema = z.object({
@@ -44,11 +74,11 @@ const postLoginSchema = z.object({
 
 const postRegisterSchema = z.object({
   email: z.string().email(),
-  password: z.string().min(6, { message: "Password must be at least 6 characters long" }), // Example: min length
+  password: z.string().min(6, { message: "Password must be at least 6 characters long" }),
   confirmPassword: z.string(),
 }).refine(data => data.password === data.confirmPassword, {
   message: "Passwords do not match",
-  path: ["confirmPassword"], // Path to field to highlight error
+  path: ["confirmPassword"],
 });
 
 const deleteContactSchema = z.object({
@@ -58,7 +88,7 @@ const deleteContactSchema = z.object({
 const deleteJobSchema = z.object({
   companyName: z.string().nonempty(),
   appliedPosition: z.string().nonempty(),
-  dateApplied: z.string().refine((val) => !isNaN(Date.parse(val)), { message: "Invalid date format for dateApplied" }),
+  dateApplied: z.string().refine((val) => val && !isNaN(Date.parse(val)), { message: "Invalid date format for dateApplied" }),
 });
 
 export class Controller {
@@ -67,7 +97,7 @@ export class Controller {
     this.service = new Service(db);
   }
 
-  postLogin = async (req: Request, res: Response): Promise<void> => {
+  postLogin = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       postLoginSchema.parse(req.body);
       const serviceResponse: ServiceResponse<UserDetails> = await this.service.postLogin(req.body.email, req.body.password, req);
@@ -81,16 +111,15 @@ export class Controller {
       console.log(`Login failed: ${serviceResponse.message}`);
       res.status(serviceResponse.status).json({ message: serviceResponse.message });
     } catch (error: any) {
-      const errorMessage = error instanceof z.ZodError ? error.errors : { message: error.message };
+      const errorMessage = error instanceof z.ZodError ? error.flatten().fieldErrors : { form: error.message };
       console.log(`Login validation/controller error:`, errorMessage);
       res.status(400).json({ message: "Login validation failed", details: errorMessage });
     }
   };
 
-  postRegister = async (req: Request, res: Response): Promise<void> => {
+  postRegister = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const validationResult = postRegisterSchema.parse(req.body);
-      // Password match is now handled by Zod's .refine
 
       const serviceResponse: ServiceResponse<null> = await this.service.postRegister(
         validationResult.email,
@@ -106,66 +135,97 @@ export class Controller {
       console.log(`Registration failed: ${serviceResponse.message}`);
       res.status(serviceResponse.status).json({ message: serviceResponse.message });
     } catch (error: any) {
-      const errorMessage = error instanceof z.ZodError ? error.errors : { message: error.message };
+      const errorMessage = error instanceof z.ZodError ? error.flatten().fieldErrors : { form: error.message };
       console.log(`Registration validation/controller error:`, errorMessage);
       res.status(400).json({ message: "Registration validation failed", details: errorMessage });
     }
   };
 
-  postSubmitJob = async (req: Request, res: Response): Promise<void> => {
+  postSubmitJob = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       sessionSchema.parse(req.session);
-      const validationResult = postSubmitJobSchema.parse(req.body);
+      const validationResult = postSubmitJobSchema.safeParse(req.body);
 
-      const serviceResponse = await this.service.postSubmitJob(
-        req.session.user_id!,
-        validationResult.companyName,
-        validationResult.appliedPosition,
-        validationResult.companyAddress || null,     // Zod optional gives undefined, service expects null
-        validationResult.dateApplied,
-        String(validationResult.country),            // Service expects string for ID
-        validationResult.companyWebsite || null,     // Zod optional gives undefined, service expects null
-        String(validationResult.status),             // Service expects string for ID
-        validationResult.additional_notes || null    // Zod optional gives undefined, service expects null
-      );
-      
-      if (!serviceResponse.isError) {
-        console.log(`Job "${validationResult.appliedPosition}" at "${validationResult.companyName}" submitted successfully. Redirecting to /.`);
-        res.redirect('/'); 
+      if (!validationResult.success) {
+        const errors = validationResult.error.flatten().fieldErrors;
+        console.error("Job submission Zod validation failed:", errors);
+        res.status(400).json({
+            message: "Validation failed. Please check your input.",
+            details: errors
+        });
         return;
       }
       
-      console.error(`Error submitting job: ${serviceResponse.message}`);
-      res.status(serviceResponse.status).json({ message: serviceResponse.message, data: serviceResponse.data });
+      const data = validationResult.data; // data.country and data.status are now numbers
+
+      const serviceResponse = await this.service.postSubmitJob(
+        req.session.user_id!,
+        data.companyName,
+        data.appliedPosition,
+        data.companyAddress || null,
+        data.dateApplied,
+        String(data.country),       // Service expects string for ID
+        data.companyWebsite || null,
+        String(data.status),        // Service expects string for ID
+        data.additional_notes || null
+      );
+      
+      if (!serviceResponse.isError) {
+        console.log(`Job "${data.appliedPosition}" at "${data.companyName}" submitted successfully. Redirecting to /.`);
+        res.redirect('/'); 
+        return; 
+      }
+      
+      console.error(`Service error submitting job: ${serviceResponse.message}`);
+      res.status(serviceResponse.status || 500).json({
+          message: serviceResponse.message || "Could not submit job application due to a server error."
+      });
 
     } catch (error:any) {
-      const errorMessage = error instanceof z.ZodError ? error.errors : { message: error.message };
-      console.error(`Job submission validation/controller error:`, errorMessage);
-      res.status(400).json({ message: "Job submission validation failed", details: errorMessage });
+      console.error(`Unexpected error in postSubmitJob:`, error);
+      if (error instanceof z.ZodError) { // This handles sessionSchema parse error
+        res.status(400).json({ message: "Invalid request data.", details: error.flatten().fieldErrors });
+      } else {
+        next(error); 
+      }
     }
   };
 
-  postSubmitContact = async (req: Request, res: Response): Promise<Response> => {
+  postSubmitContact = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       sessionSchema.parse(req.session);
-      const validationResult = postSubmitContactSchema.parse(req.body);
+      const validationResult = postSubmitContactSchema.safeParse(req.body);
+
+      if (!validationResult.success) {
+        const errors = validationResult.error.flatten().fieldErrors;
+        console.error("Contact submission Zod validation failed:", errors);
+        res.status(400).json({
+            message: "Validation failed. Please check your input.",
+            details: errors
+        });
+        return;
+      }
+      const data = validationResult.data;
 
       const serviceResponse = await this.service.postSubmitContact(
         req.session.user_id!,
-        validationResult.roleInCompany,
-        validationResult.phoneNumber,
-        validationResult.contactEmail,
-        validationResult.linkedinProfile || null,  // Zod optional gives undefined, service expects null
-        validationResult.name,
-        validationResult.companyName
+        data.roleInCompany,
+        data.phoneNumber,
+        data.contactEmail,
+        data.linkedinProfile || null,
+        data.name,
+        data.companyName
       );
+
       console.log(serviceResponse.message);
-      // For contact submission, usually a JSON response is fine, no redirect needed unless specified
-      return res.status(serviceResponse.status).json({ message: serviceResponse.message, data: serviceResponse.data });
+      res.status(serviceResponse.status).json({ message: serviceResponse.message, data: serviceResponse.data });
     } catch (error:any) {
-      const errorMessage = error instanceof z.ZodError ? error.errors : { message: error.message };
-      console.error(`Contact submission validation/controller error:`, errorMessage);
-      return res.status(400).json({ message: "Contact submission validation failed", details: errorMessage });
+      console.error(`Unexpected error in postSubmitContact:`, error);
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ message: "Invalid request data.", details: error.flatten().fieldErrors });
+      } else {
+        next(error);
+      }
     }
   };
 
@@ -178,8 +238,8 @@ export class Controller {
             res.status(500).json({ message: 'Logout failed due to server error' });
           } else {
             console.log('User logged out successfully, session destroyed.');
-            res.clearCookie('connect.sid'); // Ensure cookie is cleared (name might depend on session store config)
-            res.status(200).json({ message: 'User logged out successfully' }); // Client will handle redirect
+            res.clearCookie('connect.sid');
+            res.status(200).json({ message: 'User logged out successfully' });
           }
         });
       } else {
@@ -188,71 +248,77 @@ export class Controller {
       }
     } catch (error:any) {
         console.log('Error during logout process:', error.message);
-        res.status(400).json({ message: "Error during logout", details: error instanceof z.ZodError ? error.errors : error.message });
+        res.status(400).json({ message: "Error during logout", details: error.message });
     }
   };
 
-  deleteContact = async (req: Request, res: Response): Promise<Response> => {
+  deleteContact = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       sessionSchema.parse(req.session);
-      deleteContactSchema.parse(req.body);
+      const validationResult = deleteContactSchema.parse(req.body);
 
       const serviceResponse = await this.service.deleteContact(
         req.session.user_id!,
-        req.body.contactEmail
+        validationResult.contactEmail
       );
       console.log(serviceResponse.message);
-      return res.status(serviceResponse.status).json({ message: serviceResponse.message });
+      res.status(serviceResponse.status).json({ message: serviceResponse.message });
     } catch (error:any) {
-      const errorMessage = error instanceof z.ZodError ? error.errors : { message: error.message };
-      console.error(`Delete contact validation/controller error:`, errorMessage);
-      return res.status(400).json({ message: "Delete contact validation failed", details: errorMessage });
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ message: "Invalid request data.", details: error.flatten().fieldErrors });
+      } else {
+        next(error);
+      }
     }
   };
 
-  deleteJob = async (req: Request, res: Response): Promise<Response> => {
+  deleteJob = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       sessionSchema.parse(req.session);
-      deleteJobSchema.parse(req.body);
+      const validationResult = deleteJobSchema.parse(req.body);
 
       const serviceResponse = await this.service.deleteJob(
         req.session.user_id!,
-        req.body.companyName,
-        req.body.appliedPosition,
-        req.body.dateApplied
+        validationResult.companyName,
+        validationResult.appliedPosition,
+        validationResult.dateApplied
       );
       console.log(serviceResponse.message);
-      return res.status(serviceResponse.status).json({ message: serviceResponse.message });
+      res.status(serviceResponse.status).json({ message: serviceResponse.message });
     } catch (error:any) {
-      const errorMessage = error instanceof z.ZodError ? error.errors : { message: error.message };
-      console.error(`Delete job validation/controller error:`, errorMessage);
-      return res.status(400).json({ message: "Delete job validation failed", details: errorMessage });
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ message: "Invalid request data.", details: error.flatten().fieldErrors });
+      } else {
+        next(error);
+      }
     }
   };
 
-  getJobs = async (req: Request, res: Response): Promise<Response> => {
+  getJobs = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       sessionSchema.parse(req.session);
       const serviceResponse = await this.service.getJobs(req.session.user_id!);
-      // console.log(serviceResponse.message); // Service already logs success/failure
-      return res.status(serviceResponse.status).json({ message: serviceResponse.message, data: serviceResponse.data });
+      res.status(serviceResponse.status).json({ message: serviceResponse.message, data: serviceResponse.data });
     } catch (error:any) {
-      const errorMessage = error instanceof z.ZodError ? error.errors : { message: error.message };
-      console.error(`Get jobs validation/controller error:`, errorMessage);
-      return res.status(400).json({ message: "Get jobs validation failed", details: errorMessage });
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ message: "Invalid session.", details: error.flatten().fieldErrors });
+      } else {
+        next(error);
+      }
     }
   };
 
-  getContacts = async (req: Request, res: Response): Promise<Response> => {
+  getContacts = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       sessionSchema.parse(req.session);
       const serviceResponse = await this.service.getContacts(req.session.user_id!);
-      // console.log(serviceResponse.message);
-      return res.status(serviceResponse.status).json({ message: serviceResponse.message, data: serviceResponse.data });
+      res.status(serviceResponse.status).json({ message: serviceResponse.message, data: serviceResponse.data });
     } catch (error:any) {
-      const errorMessage = error instanceof z.ZodError ? error.errors : { message: error.message };
-      console.error(`Get contacts validation/controller error:`, errorMessage);
-      return res.status(400).json({ message: "Get contacts validation failed", details: errorMessage });
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ message: "Invalid session.", details: error.flatten().fieldErrors });
+      } else {
+        next(error);
+      }
     }
   };
 }

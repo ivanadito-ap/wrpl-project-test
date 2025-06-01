@@ -1,83 +1,108 @@
 <%- include("../partials/header.ejs") %>
 
-<div class="container">
+<div class="container mt-4 mb-5">
     <main>
         <div class="py-5 text-center">
-            <div class="d-flex">
-                <div>
-                    <a href="javascript:history.back()" class="btn btn-outline-secondary mb-3">
-                        ← Back
-                    </a>
-                </div>
+            <div class="d-flex justify-content-start mb-3">
+                <a href="javascript:history.back()" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left"></i> Back
+                </a>
             </div>
             <h2>Add Your Job Info Here</h2>
             <p class="lead">Fill out the details below to add a new job application to your JobTrek dashboard.</p>
         </div>
 
-        <div class="container">
-            <div class="col-12">
+        <div class="row justify-content-center">
+            <div class="col-md-10 col-lg-8">
                 <h4 class="mb-3">Job Details</h4>
-                <form class="needs-validation" id="addJobForm" novalidate>
+
+                <form class="needs-validation" id="addJobForm" action="/submit-job-application" method="POST" novalidate>
                     <div class="row g-3">
                         <div class="col-12">
                             <label for="companyName" class="form-label">Company Name</label>
-                            <input type="text" class="form-control" id="companyName" name="companyName" placeholder="Company Name" required>
+                            <input type="text" class="form-control <%= (typeof errors !== 'undefined' && errors.companyName) ? 'is-invalid' : (typeof formData !== 'undefined' && formData.companyName ? 'is-valid' : '') %>" 
+                                   id="companyName" name="companyName" placeholder="e.g., Google, Microsoft" required
+                                   value="<%= typeof formData !== 'undefined' ? formData.companyName : '' %>">
                             <div class="invalid-feedback">
-                                Company name is required.
+                                <%= (typeof errors !== 'undefined' && errors.companyName) ? errors.companyName : 'Company name is required.' %>
                             </div>
                         </div>
 
                         <div class="col-12">
                             <label for="appliedPosition" class="form-label">Applied Position</label>
-                            <input type="text" class="form-control" id="appliedPosition" name="appliedPosition" placeholder="Applied Position" required>
+                            <input type="text" class="form-control <%= (typeof errors !== 'undefined' && errors.appliedPosition) ? 'is-invalid' : (typeof formData !== 'undefined' && formData.appliedPosition ? 'is-valid' : '') %>" 
+                                   id="appliedPosition" name="appliedPosition" placeholder="e.g., Software Engineer, Product Manager" required
+                                   value="<%= typeof formData !== 'undefined' ? formData.appliedPosition : '' %>">
                             <div class="invalid-feedback">
-                                Applied position is required.
+                                <%= (typeof errors !== 'undefined' && errors.appliedPosition) ? errors.appliedPosition : 'Applied position is required.' %>
                             </div>
                         </div>
 
                         <div class="col-12">
                             <label for="companyAddress" class="form-label">Company Address <span class="text-muted">(Optional)</span></label>
-                            <input type="text" class="form-control" id="companyAddress" name="companyAddress" placeholder="123 Main St, City">
+                            <input type="text" class="form-control" id="companyAddress" name="companyAddress" placeholder="123 Main St, City, State"
+                                   value="<%= typeof formData !== 'undefined' ? formData.companyAddress : '' %>">
                         </div>
 
                         <div class="col-12">
                             <label for="dateApplied" class="form-label">Date of Application</label>
-                            <input type="date" class="form-control" id="dateApplied" name="dateApplied" required>
+                            <input type="date" class="form-control <%= (typeof errors !== 'undefined' && errors.dateApplied) ? 'is-invalid' : (typeof formData !== 'undefined' && formData.dateApplied ? 'is-valid' : '') %>" 
+                                   id="dateApplied" name="dateApplied" required
+                                   value="<%= typeof formData !== 'undefined' ? formData.dateApplied : '' %>">
                             <div class="invalid-feedback">
-                                Date of application is required.
+                                <%= (typeof errors !== 'undefined' && errors.dateApplied) ? errors.dateApplied : 'Date of application is required.' %>
                             </div>
                         </div>
 
-                        <div class="col-md-6"> <label for="country" class="form-label">Country</label>
-                            <select class="form-select" id="country" name="country" required>
+                        <div class="col-md-6">
+                            <label for="country" class="form-label">Country</label>
+                            <select class="form-select <%= (typeof errors !== 'undefined' && errors.country) ? 'is-invalid' : (typeof formData !== 'undefined' && formData.country ? 'is-valid' : '') %>" 
+                                    id="country" name="country" required>
                                 <option value="">Select a country...</option>
-                            </select>
-                            <div class="invalid-feedback">Please select a valid country.</div>
+                                </select>
+                            <div class="invalid-feedback">
+                                <%= (typeof errors !== 'undefined' && errors.country) ? errors.country : 'Please select a valid country.' %>
+                            </div>
                         </div>
 
-                        <div class="col-md-6"> <label for="status" class="form-label">Status</label>
-                            <select class="form-select" id="status" name="status" required>
+                        <div class="col-md-6">
+                            <label for="status" class="form-label">Status</label>
+                            <select class="form-select <%= (typeof errors !== 'undefined' && errors.status) ? 'is-invalid' : (typeof formData !== 'undefined' && formData.status ? 'is-valid' : '') %>" 
+                                    id="status" name="status" required>
                                 <option value="">Choose status...</option>
-                            </select>
+                                </select>
                             <div class="invalid-feedback">
-                                Status is required.
+                                <%= (typeof errors !== 'undefined' && errors.status) ? errors.status : 'Status is required.' %>
                             </div>
                         </div>
                         
                         <div class="col-12">
                             <label for="companyWebsite" class="form-label">Company's Website / Application Portal <span class="text-muted">(Optional)</span></label>
-                            <input type="url" class="form-control" id="companyWebsite" name="companyWebsite" placeholder="https://www.company.com">
+                            <input type="url" class="form-control" id="companyWebsite" name="companyWebsite" placeholder="https://www.company.com/careers"
+                                   value="<%= typeof formData !== 'undefined' ? formData.companyWebsite : '' %>">
                         </div>
 
                         <div class="col-12 mt-3">
                             <label for="additionalNotes" class="form-label">Additional Notes <span class="text-muted">(Optional)</span></label>
-                            <textarea class="form-control" id="additionalNotes" name="additionalNotes" placeholder="Enter any additional information..." rows="4"></textarea>
+                            <textarea class="form-control" id="additionalNotes" name="additionalNotes" placeholder="Enter any additional information..." rows="4"><%= typeof formData !== 'undefined' ? formData.additional_notes : '' %></textarea>
                         </div>
                     </div>
 
                     <hr class="my-4">
                     
-                    <div id="formMessageArea" class="mb-3"></div> <button class="w-100 btn btn-primary btn-lg mt-3 mb-5" type="submit">Add Job Application</button>
+                    <% if (typeof errors !== 'undefined' && errors.form) { %>
+                        <div class="alert alert-danger" role="alert">
+                            <%= errors.form %>
+                        </div>
+                    <% } %>
+                     <% if (typeof successMessage !== 'undefined' && successMessage) { %>
+                        <div class="alert alert-success" role="alert">
+                            <%= successMessage %>
+                        </div>
+                    <% } %>
+
+
+                    <button class="w-100 btn btn-primary btn-lg mt-3 mb-5" type="submit">Add Job Application</button>
                 </form>
             </div>
         </div>
@@ -87,15 +112,18 @@
 <%- include("../partials/footer.ejs") %>
 
 <script>
-    // Bootstrap form validation
+    // Standard Bootstrap form validation script (optional if you rely on server-side or built-in browser validation)
+    // This script enables Bootstrap's custom styling for validation states.
     (() => {
         'use strict'
         const forms = document.querySelectorAll('.needs-validation')
         Array.from(forms).forEach(form => {
             form.addEventListener('submit', event => {
+                // We are letting the server handle validation primarily with direct POST
+                // but Bootstrap styling can still be triggered if form.checkValidity() is false
                 if (!form.checkValidity()) {
-                    event.preventDefault()
-                    event.stopPropagation()
+                    // event.preventDefault() // Don't prevent default if you want it to submit for server-side handling
+                    // event.stopPropagation()
                 }
                 form.classList.add('was-validated')
             }, false)
@@ -103,110 +131,44 @@
     })();
 
     document.addEventListener('DOMContentLoaded', () => {
-        const addJobForm = document.getElementById('addJobForm');
         const countrySelect = document.getElementById('country');
         const statusSelect = document.getElementById('status');
-        const messageArea = document.getElementById('formMessageArea');
 
-        // Populate Country Dropdown
-        const countries = <%- JSON.stringify(typeof countries !== 'undefined' ? countries : []) %>;
-        if (countries && countrySelect) {
-            countries.forEach(country => {
+        // --- Populate Country Dropdown ---
+        // 'countries' is passed from the server via res.render() in router.js
+        const countriesData = <%- JSON.stringify(typeof countries !== 'undefined' ? countries : []) %>;
+        const selectedCountry = "<%- typeof formData !== 'undefined' ? formData.country : '' %>";
+
+        if (countrySelect && countriesData.length > 0) {
+            countriesData.forEach(country => {
                 const option = document.createElement('option');
                 option.value = country.country_id;
                 option.textContent = country.country_name;
+                if (String(country.country_id) === selectedCountry) {
+                    option.selected = true;
+                }
                 countrySelect.appendChild(option);
             });
         }
 
-        // Populate Status Dropdown
-        const applicationStatuses = <%- JSON.stringify(typeof statuses !== 'undefined' ? statuses : []) %>;
-        if (applicationStatuses && statusSelect) {
-            applicationStatuses.forEach((statusName, index) => {
+        // --- Populate Status Dropdown ---
+        // 'statuses' is passed from the server (enum array)
+        const applicationStatusesData = <%- JSON.stringify(typeof statuses !== 'undefined' ? statuses : []) %>;
+        const selectedStatus = "<%- typeof formData !== 'undefined' ? formData.status : '' %>";
+
+        if (statusSelect && applicationStatusesData.length > 0) {
+            applicationStatusesData.forEach((statusName, index) => {
                 const option = document.createElement('option');
                 option.value = index; 
                 option.textContent = statusName;
+                if (String(index) === selectedStatus) {
+                    option.selected = true;
+                }
                 statusSelect.appendChild(option);
             });
         }
 
-        if (addJobForm) {
-            addJobForm.addEventListener('submit', async (event) => {
-                event.preventDefault(); 
-                addJobForm.classList.add('was-validated');
-
-                if (!addJobForm.checkValidity()) {
-                    messageArea.innerHTML = '<div class="alert alert-danger" role="alert">Please fill in all required fields correctly.</div>';
-                    // Do not remove 'was-validated' here, let user see errors
-                    return;
-                }
-                
-                messageArea.innerHTML = '<div class="alert alert-info" role="alert">Submitting job application...</div>';
-
-                const formDataPayload = {
-                    companyName: document.getElementById('companyName').value,
-                    appliedPosition: document.getElementById('appliedPosition').value,
-                    companyAddress: document.getElementById('companyAddress').value || null,
-                    dateApplied: document.getElementById('dateApplied').value,
-                    country: parseInt(countrySelect.value),
-                    companyWebsite: document.getElementById('companyWebsite').value || null,
-                    status: parseInt(statusSelect.value),
-                    additional_notes: document.getElementById('additionalNotes').value || null
-                };
-
-                try {
-                    const response = await fetch('/api/v1/jobs', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(formDataPayload)
-                    });
-
-                    // If response.redirected is true, the browser has already started navigating
-                    // or will navigate. The 'response' object is for the *final* destination.
-                    // We only need to act if the final response was not 'ok' (e.g., if '/' page itself had an error after redirect)
-                    // or if the original API call returned an error without redirecting.
-
-                    if (response.ok && response.redirected) {
-                        // Successful submission and redirect was followed by the browser.
-                        // The browser is navigating to '/'. No further client-side action on this page
-                        // is typically needed for the success message or form reset, as this page will be replaced.
-                        // The "Submitting job application..." message will disappear with the page navigation.
-                        console.log('Job submitted, server redirected, browser is navigating.');
-                        return; // Allow browser to complete navigation
-                    }
-                    
-                    if (!response.ok) {
-                        // This handles two cases:
-                        // 1. API directly returned an error (e.g., 400, 500 from /api/v1/jobs) - response.redirected will be false.
-                        // 2. API redirected, but the target page ('/') resulted in an error - response.redirected will be true.
-                        let errorData = { message: `Request failed with status: ${response.status}` };
-                        if (response.headers.get("content-type")?.includes("application/json")) {
-                            try {
-                                errorData = await response.json();
-                            } catch (e) {
-                                console.warn("Could not parse error JSON from response:", e);
-                            }
-                        }
-                        messageArea.innerHTML = `<div class="alert alert-danger" role="alert">${errorData.message || 'Submission failed.'}</div>`;
-                        addJobForm.classList.remove('was-validated'); // Allow user to correct and retry
-                    } else if (response.ok && !response.redirected) {
-                        // This case: API call was successful (e.g. 200 or 201) but DID NOT redirect.
-                        // This shouldn't happen with your current backend setup for POST /api/v1/jobs on success.
-                        // If it did, you'd handle the success JSON here.
-                        console.log("Job submitted successfully, but server did not redirect. Response:", await response.text());
-                        messageArea.innerHTML = `<div class="alert alert-success" role="alert">Job submitted (but no redirect occurred).</div>`;
-                        addJobForm.reset();
-                        addJobForm.classList.remove('was-validated');
-                    }
-
-                } catch (error) {
-                    // This catches network errors (e.g., server down, CORS if it were an issue)
-                    // or JavaScript errors within the try block (e.g., if response.json() failed unexpectedly).
-                    console.error('Submit job fetch/processing error:', error);
-                    messageArea.innerHTML = '<div class="alert alert-danger" role="alert">An unexpected error occurred. Please check your connection and try again.</div>';
-                    addJobForm.classList.remove('was-validated');
-                }
-            });
-        }
+        // No fetch-based submission logic needed here anymore for this approach
+        // The form will submit via its action and method attributes.
     });
 </script>
