@@ -103,13 +103,10 @@ export class Controller {
         return;
       }
       console.log(`Login failed: ${serviceResponse.message}`);
-      // It's better to render an error page or send specific error messages for login failures
-      // For now, redirecting back to login with a query parameter for the message
       res.redirect(`/login?error=${encodeURIComponent(serviceResponse.message)}`);
     } catch (error: any) {
       const errorMessage = error instanceof z.ZodError ? error.flatten().fieldErrors : { form: error.message };
       console.log(`Login validation/controller error:`, errorMessage);
-      // Construct a user-friendly error message string from Zod errors
       let errorMsgForQuery = "Login validation failed.";
       if (error instanceof z.ZodError) {
           const fieldErrors = Object.values(error.flatten().fieldErrors).flat().join(' ');
@@ -131,12 +128,10 @@ export class Controller {
 
       if (!serviceResponse.isError) {
         console.log(`Registration successful for ${validationResult.email}, redirecting to /login`);
-        // Optionally, add a success message to the login page
         res.redirect('/login?message=Registration successful. Please login.');
         return;
       }
       console.log(`Registration failed: ${serviceResponse.message}`);
-      // Redirect back to register page with error message
       res.redirect(`/register?error=${encodeURIComponent(serviceResponse.message)}`);
     } catch (error: any) {
       const errorMessage = error instanceof z.ZodError ? error.flatten().fieldErrors : { form: error.message };
@@ -158,14 +153,13 @@ export class Controller {
       if (!validationResult.success) {
         const errors = validationResult.error.flatten().fieldErrors;
         console.error("Job submission Zod validation failed:", errors);
-        // Instead of JSON, re-render the form with errors and existing data
         res.status(400).render("forms/job-info-form", {
             title: "Add New Job Application - Error",
-            countries: countryIds, // Make sure countryIds is available
-            statuses: applicationStatusEnum.enumValues, // Make sure applicationStatusEnum is available
-            formData: req.body, // Pass back the submitted data
-            errors: errors,     // Pass the Zod errors
-            message: "Validation failed. Please check your input." // General message
+            countries: countryIds,
+            statuses: applicationStatusEnum.enumValues,
+            formData: req.body,
+            errors: errors,
+            message: "Validation failed. Please check your input."
         });
         return;
       }
@@ -191,13 +185,12 @@ export class Controller {
       }
 
       console.error(`Service error submitting job: ${serviceResponse.message}`);
-      // Re-render form with service error
       res.status(serviceResponse.status || 500).render("forms/job-info-form", {
           title: "Add New Job Application - Error",
           countries: countryIds,
           statuses: applicationStatusEnum.enumValues,
           formData: req.body,
-          errors: { form: serviceResponse.message }, // Show service error as a form-level error
+          errors: { form: serviceResponse.message },
           message: serviceResponse.message || "Could not submit job application due to a server error."
       });
 
@@ -206,7 +199,6 @@ export class Controller {
       if (error instanceof z.ZodError && error.issues.some(issue => issue.path.includes('user_id'))) {
         res.status(401).render("error", { message: "Unauthorized. Please login." });
       } else {
-        // Render a generic error page or the form with a generic error
         res.status(500).render("forms/job-info-form", {
             title: "Add New Job Application - Error",
             countries: countryIds,
@@ -227,7 +219,6 @@ export class Controller {
       if (!validationResult.success) {
         const errors = validationResult.error.flatten().fieldErrors;
         console.error("Contact submission Zod validation failed:", errors);
-        // Re-render the contact form with errors
         res.status(400).render("forms/contact-form", {
             title: "Add New Contact - Error",
             formData: req.body,
@@ -250,7 +241,7 @@ export class Controller {
 
       if (!serviceResponse.isError) {
           console.log(`Contact "${data.name}" submitted successfully. Redirecting to /contacts.`);
-          res.redirect('/contacts'); // Redirect to contacts list page
+          res.redirect('/contacts');
           return;
       }
       
@@ -277,35 +268,38 @@ export class Controller {
     }
   };
 
+  // MODIFIED: deleteLogout to return JSON
   deleteLogout = async (req: Request, res: Response): Promise<void> => {
     try {
       if (req.session && req.session.user_id) {
         req.session.destroy((err) => {
           if (err) {
-            console.log('Failed to destroy session during logout:', err);
-            // Don't send JSON if it's a page interaction, redirect or render error page
-            res.status(500).render("error", { message: "Logout failed due to server error." });
+            console.error('Failed to destroy session during logout:', err);
+            // Send JSON error response
+            res.status(500).json({ success: false, message: 'Logout failed due to server error.' });
           } else {
             console.log('User logged out successfully, session destroyed.');
-            res.clearCookie('connect.sid'); // Ensure the session cookie is cleared
-            res.redirect('/login?message=Logged out successfully.');
+            res.clearCookie('connect.sid');
+            // Send JSON success response; client will handle redirect
+            res.status(200).json({ success: true, message: 'Logged out successfully. Redirecting...' });
           }
         });
       } else {
         console.log('Logout attempt with no active session.');
-        res.redirect('/login?message=No active session to log out from.');
+        // Send JSON response; client will handle redirect
+        res.status(200).json({ success: true, message: 'No active session to log out from. Redirecting...' });
       }
     } catch (error:any) {
-        console.log('Error during logout process:', error.message);
-        res.status(400).render("error", { message: "Error during logout", details: error.message });
+        console.error('Error during logout process:', error);
+        // Send JSON error response
+        res.status(500).json({ success: false, message: "Error during logout process.", details: error.message });
     }
   };
 
-  // API endpoint for deleting contact (called via fetch from client-side typically)
   deleteContactAPI = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       sessionSchema.parse(req.session);
-      const validationResult = deleteContactSchema.parse(req.body); // Assuming email is in body
+      const validationResult = deleteContactSchema.parse(req.body);
 
       const serviceResponse = await this.service.deleteContact(
         req.session.user_id!,
@@ -323,11 +317,10 @@ export class Controller {
     }
   };
 
-  // API endpoint for deleting job (called via fetch from client-side typically)
   deleteJobAPI = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       sessionSchema.parse(req.session);
-      const validationResult = deleteJobSchema.parse(req.body); // Assuming identifiers are in body
+      const validationResult = deleteJobSchema.parse(req.body);
 
       const serviceResponse = await this.service.deleteJob(
         req.session.user_id!,
@@ -347,7 +340,6 @@ export class Controller {
     }
   };
 
-  // API endpoint for getting jobs (called via fetch from client-side)
   getJobsAPI = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       sessionSchema.parse(req.session);
@@ -363,7 +355,6 @@ export class Controller {
     }
   };
 
-  // API endpoint for getting contacts (called via fetch from client-side)
   getContactsAPI = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       sessionSchema.parse(req.session);
@@ -379,7 +370,6 @@ export class Controller {
     }
   };
 
-  // Controller method for rendering the job detail page
   renderJobDetailPage = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       sessionSchema.parse(req.session);
@@ -411,8 +401,8 @@ export class Controller {
       res.render("job-detail", {
           title: "Job Details",
           job: jobData,
-          statuses: applicationStatusEnum.enumValues, // Now correctly in scope
-          countries: countryIds  // Now correctly in scope
+          statuses: applicationStatusEnum.enumValues,
+          countries: countryIds
       });
 
     } catch (error:any) {
