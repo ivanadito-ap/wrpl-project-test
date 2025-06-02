@@ -7,8 +7,8 @@ import { z } from "zod";
 import 'express-session';
 
 // Corrected: Ensure these imports are at the top level
-import { applicationStatusEnum } from '../../db/schema.js';
-import { countryIds } from '../../db/country_id_seed.js';
+import { applicationStatusEnum } from '../../db/schema.js'; //
+import { countryIds } from '../../db/country_id_seed.js'; //
 
 declare module 'express-session' {
   interface SessionData {
@@ -19,7 +19,7 @@ declare module 'express-session' {
 // Zod Schemas
 const sessionSchema = z.object({
   user_id: z.string().nonempty("user_id is required"),
-});
+}); //
 
 const postSubmitJobSchema = z.object({
   companyName: z.string().nonempty({ message: "Company name is required."}),
@@ -50,7 +50,7 @@ const postSubmitJobSchema = z.object({
     })
   ),
   additional_notes: z.string().optional(),
-});
+}); //
 
 const postSubmitContactSchema = z.object({
   name: z.string().nonempty("Name is required"),
@@ -58,13 +58,13 @@ const postSubmitContactSchema = z.object({
   roleInCompany: z.string().nonempty(),
   phoneNumber: z.string().nonempty(),
   contactEmail: z.string().email(),
-  linkedinProfile: z.string().url({ message: "Invalid URL format." }).optional().or(z.literal('')),
-});
+  linkedinProfile: z.string().url({ message: "Invalid URL format." }).optional().or(z.literal('')).nullable(), // Allow null from client
+}); //
 
 const postLoginSchema = z.object({
   email: z.string().email(),
   password: z.string().nonempty(),
-});
+}); //
 
 const postRegisterSchema = z.object({
   email: z.string().email(),
@@ -73,17 +73,18 @@ const postRegisterSchema = z.object({
 }).refine(data => data.password === data.confirmPassword, {
   message: "Passwords do not match",
   path: ["confirmPassword"],
-});
+}); //
 
 const deleteContactSchema = z.object({
   contactEmail: z.string().email(),
-});
+}); //
 
 const deleteJobSchema = z.object({
   companyName: z.string().nonempty(),
   appliedPosition: z.string().nonempty(),
   dateApplied: z.string().refine((val) => val && !isNaN(Date.parse(val)), { message: "Invalid date format for dateApplied" }),
-});
+}); //
+
 
 export class Controller {
   service: Service;
@@ -91,7 +92,8 @@ export class Controller {
     this.service = new Service(db);
   }
 
-  postLogin = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+
+  postLogin = async (req: Request, res: Response, next: NextFunction): Promise<void> => { //
     try {
       postLoginSchema.parse(req.body);
       const serviceResponse: ServiceResponse<UserDetails> = await this.service.postLogin(req.body.email, req.body.password, req);
@@ -99,11 +101,15 @@ export class Controller {
       if (!serviceResponse.isError && serviceResponse.data) {
         req.session.user_id = serviceResponse.data.user_id;
         console.log(`Login successful for ${req.body.email}, redirecting to /`);
-        res.redirect('/');
+        // For client-side handling that expects JSON, you might prefer:
+        // res.status(200).json({ success: true, message: "Login successful", redirectUrl: "/" });
+        res.redirect('/'); // Current behavior
         return;
       }
       console.log(`Login failed: ${serviceResponse.message}`);
-      res.redirect(`/login?error=${encodeURIComponent(serviceResponse.message)}`);
+      // For client-side handling, you might prefer:
+      // res.status(serviceResponse.status || 400).json({ success: false, message: serviceResponse.message });
+      res.redirect(`/login?error=${encodeURIComponent(serviceResponse.message)}`); // Current behavior
     } catch (error: any) {
       const errorMessage = error instanceof z.ZodError ? error.flatten().fieldErrors : { form: error.message };
       console.log(`Login validation/controller error:`, errorMessage);
@@ -112,11 +118,13 @@ export class Controller {
           const fieldErrors = Object.values(error.flatten().fieldErrors).flat().join(' ');
           if (fieldErrors) errorMsgForQuery = fieldErrors;
       }
-      res.redirect(`/login?error=${encodeURIComponent(errorMsgForQuery)}`);
+      // For client-side handling, you might prefer:
+      // res.status(400).json({ success: false, message: errorMsgForQuery, details: errorMessage });
+      res.redirect(`/login?error=${encodeURIComponent(errorMsgForQuery)}`); // Current behavior
     }
   };
 
-  postRegister = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  postRegister = async (req: Request, res: Response, next: NextFunction): Promise<void> => { //
     try {
       const validationResult = postRegisterSchema.parse(req.body);
 
@@ -128,11 +136,15 @@ export class Controller {
 
       if (!serviceResponse.isError) {
         console.log(`Registration successful for ${validationResult.email}, redirecting to /login`);
-        res.redirect('/login?message=Registration successful. Please login.');
+        // For client-side handling:
+        // res.status(201).json({ success: true, message: "Registration successful. Please login.", redirectUrl: "/login" });
+        res.redirect('/login?message=Registration successful. Please login.'); // Current behavior
         return;
       }
       console.log(`Registration failed: ${serviceResponse.message}`);
-      res.redirect(`/register?error=${encodeURIComponent(serviceResponse.message)}`);
+      // For client-side handling:
+      // res.status(serviceResponse.status || 400).json({ success: false, message: serviceResponse.message });
+      res.redirect(`/register?error=${encodeURIComponent(serviceResponse.message)}`); // Current behavior
     } catch (error: any) {
       const errorMessage = error instanceof z.ZodError ? error.flatten().fieldErrors : { form: error.message };
       console.log(`Registration validation/controller error:`, errorMessage);
@@ -141,18 +153,24 @@ export class Controller {
           const fieldErrors = Object.values(error.flatten().fieldErrors).flat().join(' ');
           if (fieldErrors) errorMsgForQuery = fieldErrors;
       }
-      res.redirect(`/register?error=${encodeURIComponent(errorMsgForQuery)}`);
+      // For client-side handling:
+      // res.status(400).json({ success: false, message: errorMsgForQuery, details: errorMessage });
+      res.redirect(`/register?error=${encodeURIComponent(errorMsgForQuery)}`); // Current behavior
     }
   };
-
-  postSubmitJob = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  
+  postSubmitJob = async (req: Request, res: Response, next: NextFunction): Promise<void> => { //
     try {
-      sessionSchema.parse(req.session);
+      sessionSchema.parse(req.session); // Check session first
       const validationResult = postSubmitJobSchema.safeParse(req.body);
 
       if (!validationResult.success) {
         const errors = validationResult.error.flatten().fieldErrors;
         console.error("Job submission Zod validation failed:", errors);
+        // If the form is submitted via client-side JS expecting JSON:
+        // return res.status(400).json({ message: "Validation failed. Please check your input.", errors: errors, formData: req.body });
+        
+        // Current behavior (renders page - assumes traditional form post or client-side handling of HTML response for errors)
         res.status(400).render("forms/job-info-form", {
             title: "Add New Job Application - Error",
             countries: countryIds,
@@ -172,19 +190,25 @@ export class Controller {
         data.appliedPosition,
         data.companyAddress || null,
         data.dateApplied,
-        String(data.country),
+        String(data.country), // Ensure country is passed as string if service expects number it will convert
         data.companyWebsite || null,
-        String(data.status),
+        String(data.status),   // Ensure status is passed as string if service expects number it will convert
         data.additional_notes || null
       );
 
       if (!serviceResponse.isError) {
         console.log(`Job "${data.appliedPosition}" at "${data.companyName}" submitted successfully. Redirecting to /.`);
-        res.redirect('/');
+        // If client-side JS expects JSON:
+        // return res.status(201).json({ message: "Job submitted successfully", redirectUrl: "/" });
+        res.redirect('/'); // Current behavior
         return;
       }
 
       console.error(`Service error submitting job: ${serviceResponse.message}`);
+      // If client-side JS expects JSON:
+      // return res.status(serviceResponse.status || 500).json({ message: serviceResponse.message || "Could not submit job application due to a server error.", errors: { form: serviceResponse.message }, formData: req.body });
+
+      // Current behavior (renders page)
       res.status(serviceResponse.status || 500).render("forms/job-info-form", {
           title: "Add New Job Application - Error",
           countries: countryIds,
@@ -197,8 +221,14 @@ export class Controller {
     } catch (error:any) {
       console.error(`Unexpected error in postSubmitJob:`, error);
       if (error instanceof z.ZodError && error.issues.some(issue => issue.path.includes('user_id'))) {
-        res.status(401).render("error", { message: "Unauthorized. Please login." });
+        // If client-side JS expects JSON:
+        // return res.status(401).json({ message: "Unauthorized. Please login." });
+        res.status(401).render("error", { message: "Unauthorized. Please login." }); // Current behavior
       } else {
+        // If client-side JS expects JSON:
+        // return res.status(500).json({ message: "An unexpected error occurred.", errors: { form: "An unexpected error occurred." }, formData: req.body });
+        
+        // Current behavior (renders page)
         res.status(500).render("forms/job-info-form", {
             title: "Add New Job Application - Error",
             countries: countryIds,
@@ -210,23 +240,24 @@ export class Controller {
       }
     }
   };
-
+  
   postSubmitContact = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      sessionSchema.parse(req.session);
+      sessionSchema.parse(req.session); // Check session first
       const validationResult = postSubmitContactSchema.safeParse(req.body);
 
       if (!validationResult.success) {
         const errors = validationResult.error.flatten().fieldErrors;
         console.error("Contact submission Zod validation failed:", errors);
-        res.status(400).render("forms/contact-form", {
-            title: "Add New Contact - Error",
-            formData: req.body,
-            errors: errors,
-            message: "Validation failed. Please check your input."
+        // Return JSON for client-side handling in contact-form.ejs
+        res.status(400).json({ 
+            message: "Validation failed. Please check your input.", 
+            details: errors, // Send Zod error details
+            errorType: "Validation"
         });
         return;
       }
+      
       const data = validationResult.data;
 
       const serviceResponse = await this.service.postSubmitContact(
@@ -240,63 +271,58 @@ export class Controller {
       );
 
       if (!serviceResponse.isError) {
-          console.log(`Contact "${data.name}" submitted successfully. Redirecting to /contacts.`);
-          res.redirect('/contacts');
+          console.log(`Contact "${data.name}" submitted successfully.`);
+          // Return JSON for client-side handling
+          res.status(201).json({ message: 'Contact submitted successfully' });
           return;
       }
       
+      // Service error
       console.error(`Service error submitting contact: ${serviceResponse.message}`);
-      res.status(serviceResponse.status || 500).render("forms/contact-form", {
-          title: "Add New Contact - Error",
-          formData: req.body,
-          errors: { form: serviceResponse.message },
-          message: serviceResponse.message || "Could not submit contact due to a server error."
+      // Return JSON for client-side handling
+      res.status(serviceResponse.status || 500).json({ 
+          message: serviceResponse.message || "Could not submit contact due to a server error.",
+          errorType: "Service"
       });
 
     } catch (error:any) {
       console.error(`Unexpected error in postSubmitContact:`, error);
        if (error instanceof z.ZodError && error.issues.some(issue => issue.path.includes('user_id'))) {
-        res.status(401).render("error", { message: "Unauthorized. Please login." });
+        res.status(401).json({ message: "Unauthorized. Please login.", errorType: "Authentication" });
       } else {
-        res.status(500).render("forms/contact-form", {
-            title: "Add New Contact - Error",
-            formData: req.body,
-            errors: { form: "An unexpected error occurred." },
-            message: "An unexpected error occurred."
+        // Catch-all for other unexpected errors
+        res.status(500).json({ 
+            message: "An unexpected error occurred while submitting the contact.",
+            errorType: "Server"
         });
       }
     }
   };
 
-  // MODIFIED: deleteLogout to return JSON
-  deleteLogout = async (req: Request, res: Response): Promise<void> => {
+  deleteLogout = async (req: Request, res: Response): Promise<void> => { //
     try {
       if (req.session && req.session.user_id) {
         req.session.destroy((err) => {
           if (err) {
             console.error('Failed to destroy session during logout:', err);
-            // Send JSON error response
             res.status(500).json({ success: false, message: 'Logout failed due to server error.' });
           } else {
             console.log('User logged out successfully, session destroyed.');
-            res.clearCookie('connect.sid');
-            // Send JSON success response; client will handle redirect
+            res.clearCookie('connect.sid'); 
             res.status(200).json({ success: true, message: 'Logged out successfully. Redirecting...' });
           }
         });
       } else {
         console.log('Logout attempt with no active session.');
-        // Send JSON response; client will handle redirect
         res.status(200).json({ success: true, message: 'No active session to log out from. Redirecting...' });
       }
     } catch (error:any) {
         console.error('Error during logout process:', error);
-        // Send JSON error response
         res.status(500).json({ success: false, message: "Error during logout process.", details: error.message });
     }
   };
 
-  deleteContactAPI = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  deleteContactAPI = async (req: Request, res: Response, next: NextFunction): Promise<void> => { //
     try {
       sessionSchema.parse(req.session);
       const validationResult = deleteContactSchema.parse(req.body);
@@ -308,7 +334,9 @@ export class Controller {
       console.log(serviceResponse.message);
       res.status(serviceResponse.status).json({ message: serviceResponse.message });
     } catch (error:any) {
-      if (error instanceof z.ZodError) {
+      if (error instanceof z.ZodError && error.issues.some(issue => issue.path.includes('user_id'))) {
+        res.status(401).json({ message: "Unauthorized or invalid session." });
+      } else if (error instanceof z.ZodError) {
         res.status(400).json({ message: "Invalid request data.", details: error.flatten().fieldErrors });
       } else {
         console.error("Error in deleteContactAPI:", error);
@@ -317,7 +345,7 @@ export class Controller {
     }
   };
 
-  deleteJobAPI = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  deleteJobAPI = async (req: Request, res: Response, next: NextFunction): Promise<void> => { //
     try {
       sessionSchema.parse(req.session);
       const validationResult = deleteJobSchema.parse(req.body);
@@ -331,7 +359,9 @@ export class Controller {
       console.log(serviceResponse.message);
       res.status(serviceResponse.status).json({ message: serviceResponse.message });
     } catch (error:any) {
-      if (error instanceof z.ZodError) {
+      if (error instanceof z.ZodError && error.issues.some(issue => issue.path.includes('user_id'))) {
+         res.status(401).json({ message: "Unauthorized or invalid session." });
+      } else if (error instanceof z.ZodError) {
         res.status(400).json({ message: "Invalid request data.", details: error.flatten().fieldErrors });
       } else {
         console.error("Error in deleteJobAPI:", error);
@@ -340,13 +370,13 @@ export class Controller {
     }
   };
 
-  getJobsAPI = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  getJobsAPI = async (req: Request, res: Response, next: NextFunction): Promise<void> => { //
     try {
       sessionSchema.parse(req.session);
       const serviceResponse = await this.service.getJobs(req.session.user_id!);
       res.status(serviceResponse.status).json({ message: serviceResponse.message, data: serviceResponse.data });
     } catch (error:any) {
-      if (error instanceof z.ZodError) {
+      if (error instanceof z.ZodError) { // This implies session validation failed
         res.status(401).json({ message: "Unauthorized or invalid session." });
       } else {
         console.error("Error in getJobsAPI:", error);
@@ -355,13 +385,13 @@ export class Controller {
     }
   };
 
-  getContactsAPI = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  getContactsAPI = async (req: Request, res: Response, next: NextFunction): Promise<void> => { //
     try {
       sessionSchema.parse(req.session);
       const serviceResponse = await this.service.getContacts(req.session.user_id!);
       res.status(serviceResponse.status).json({ message: serviceResponse.message, data: serviceResponse.data });
     } catch (error:any) {
-      if (error instanceof z.ZodError) {
+       if (error instanceof z.ZodError) { // This implies session validation failed
         res.status(401).json({ message: "Unauthorized or invalid session." });
       } else {
         console.error("Error in getContactsAPI:", error);
@@ -369,8 +399,8 @@ export class Controller {
       }
     }
   };
-
-  renderJobDetailPage = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  
+  renderJobDetailPage = async (req: Request, res: Response, next: NextFunction): Promise<void> => { //
     try {
       sessionSchema.parse(req.session);
       const user_id = req.session.user_id!;

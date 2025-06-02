@@ -11,10 +11,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 import { Service } from '../service/service.js';
 import { z } from "zod";
 import 'express-session';
-// Corrected: Ensure these imports are at the top level
+// Imports from your existing controller.ts
 import { applicationStatusEnum } from '../../db/schema.js';
 import { countryIds } from '../../db/country_id_seed.js';
-// Zod Schemas
+// Zod Schemas (from your existing controller.ts)
 const sessionSchema = z.object({
     user_id: z.string().nonempty("user_id is required"),
 });
@@ -52,7 +52,7 @@ const postSubmitContactSchema = z.object({
     roleInCompany: z.string().nonempty(),
     phoneNumber: z.string().nonempty(),
     contactEmail: z.string().email(),
-    linkedinProfile: z.string().url({ message: "Invalid URL format." }).optional().or(z.literal('')),
+    linkedinProfile: z.string().url({ message: "Invalid URL format." }).optional().or(z.literal('')).nullable(),
 });
 const postLoginSchema = z.object({
     email: z.string().email(),
@@ -176,13 +176,14 @@ export class Controller {
                 }
             }
         });
-        this.postSubmitContact = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+        // NEW: Method for traditional form submission of contacts with server-side redirect
+        this.handleContactFormAndRedirect = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
             try {
-                sessionSchema.parse(req.session);
+                sessionSchema.parse(req.session); // Check session first
                 const validationResult = postSubmitContactSchema.safeParse(req.body);
                 if (!validationResult.success) {
                     const errors = validationResult.error.flatten().fieldErrors;
-                    console.error("Contact submission Zod validation failed:", errors);
+                    console.error("Contact submission Zod validation failed (server-side form post):", errors);
                     res.status(400).render("forms/contact-form", {
                         title: "Add New Contact - Error",
                         formData: req.body,
@@ -192,13 +193,16 @@ export class Controller {
                     return;
                 }
                 const data = validationResult.data;
-                const serviceResponse = yield this.service.postSubmitContact(req.session.user_id, data.roleInCompany, data.phoneNumber, data.contactEmail, data.linkedinProfile || null, data.name, data.companyName);
+                const serviceResponse = yield this.service.postSubmitContact(req.session.user_id, data.roleInCompany, data.phoneNumber, data.contactEmail, data.linkedinProfile || null, // Zod schema handles empty string vs. undefined
+                data.name, data.companyName);
                 if (!serviceResponse.isError) {
-                    console.log(`Contact "${data.name}" submitted successfully. Redirecting to /contacts.`);
+                    console.log(`Contact "${data.name}" submitted successfully via form post. Redirecting to /contacts.`);
+                    // Optionally: Implement flash messages for success indication on the next page
+                    // req.flash('success_msg', 'Contact added successfully!');
                     res.redirect('/contacts');
                     return;
                 }
-                console.error(`Service error submitting contact: ${serviceResponse.message}`);
+                console.error(`Service error submitting contact via form post: ${serviceResponse.message}`);
                 res.status(serviceResponse.status || 500).render("forms/contact-form", {
                     title: "Add New Contact - Error",
                     formData: req.body,
@@ -207,7 +211,7 @@ export class Controller {
                 });
             }
             catch (error) {
-                console.error(`Unexpected error in postSubmitContact:`, error);
+                console.error(`Unexpected error in handleContactFormAndRedirect:`, error);
                 if (error instanceof z.ZodError && error.issues.some(issue => issue.path.includes('user_id'))) {
                     res.status(401).render("error", { message: "Unauthorized. Please login." });
                 }
@@ -215,39 +219,76 @@ export class Controller {
                     res.status(500).render("forms/contact-form", {
                         title: "Add New Contact - Error",
                         formData: req.body,
-                        errors: { form: "An unexpected error occurred." },
-                        message: "An unexpected error occurred."
+                        errors: { form: "An unexpected server error occurred." },
+                        message: "An unexpected server error occurred. Please try again."
                     });
                 }
             }
         });
-        // MODIFIED: deleteLogout to return JSON
+        // Existing API endpoint for contact submission (returns JSON)
+        // This is the one that was modified in Turn 11/12.
+        this.postSubmitContact = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+            try {
+                sessionSchema.parse(req.session);
+                const validationResult = postSubmitContactSchema.safeParse(req.body);
+                if (!validationResult.success) {
+                    const errors = validationResult.error.flatten().fieldErrors;
+                    console.error("Contact submission Zod validation failed (API):", errors);
+                    res.status(400).json({
+                        message: "Validation failed. Please check your input.",
+                        details: errors,
+                        errorType: "Validation"
+                    });
+                    return;
+                }
+                const data = validationResult.data;
+                const serviceResponse = yield this.service.postSubmitContact(req.session.user_id, data.roleInCompany, data.phoneNumber, data.contactEmail, data.linkedinProfile || null, data.name, data.companyName);
+                if (!serviceResponse.isError) {
+                    console.log(`Contact "${data.name}" submitted successfully (API).`);
+                    res.status(201).json({ message: 'Contact submitted successfully' });
+                    return;
+                }
+                console.error(`Service error submitting contact (API): ${serviceResponse.message}`);
+                res.status(serviceResponse.status || 500).json({
+                    message: serviceResponse.message || "Could not submit contact due to a server error.",
+                    errorType: "Service"
+                });
+            }
+            catch (error) {
+                console.error(`Unexpected error in postSubmitContact (API):`, error);
+                if (error instanceof z.ZodError && error.issues.some(issue => issue.path.includes('user_id'))) {
+                    res.status(401).json({ message: "Unauthorized. Please login.", errorType: "Authentication" });
+                }
+                else {
+                    res.status(500).json({
+                        message: "An unexpected error occurred while submitting the contact.",
+                        errorType: "Server"
+                    });
+                }
+            }
+        });
         this.deleteLogout = (req, res) => __awaiter(this, void 0, void 0, function* () {
             try {
                 if (req.session && req.session.user_id) {
                     req.session.destroy((err) => {
                         if (err) {
                             console.error('Failed to destroy session during logout:', err);
-                            // Send JSON error response
                             res.status(500).json({ success: false, message: 'Logout failed due to server error.' });
                         }
                         else {
                             console.log('User logged out successfully, session destroyed.');
                             res.clearCookie('connect.sid');
-                            // Send JSON success response; client will handle redirect
                             res.status(200).json({ success: true, message: 'Logged out successfully. Redirecting...' });
                         }
                     });
                 }
                 else {
                     console.log('Logout attempt with no active session.');
-                    // Send JSON response; client will handle redirect
                     res.status(200).json({ success: true, message: 'No active session to log out from. Redirecting...' });
                 }
             }
             catch (error) {
                 console.error('Error during logout process:', error);
-                // Send JSON error response
                 res.status(500).json({ success: false, message: "Error during logout process.", details: error.message });
             }
         });
@@ -260,7 +301,10 @@ export class Controller {
                 res.status(serviceResponse.status).json({ message: serviceResponse.message });
             }
             catch (error) {
-                if (error instanceof z.ZodError) {
+                if (error instanceof z.ZodError && error.issues.some(issue => issue.path.includes('user_id'))) {
+                    res.status(401).json({ message: "Unauthorized or invalid session." });
+                }
+                else if (error instanceof z.ZodError) {
                     res.status(400).json({ message: "Invalid request data.", details: error.flatten().fieldErrors });
                 }
                 else {
@@ -278,7 +322,10 @@ export class Controller {
                 res.status(serviceResponse.status).json({ message: serviceResponse.message });
             }
             catch (error) {
-                if (error instanceof z.ZodError) {
+                if (error instanceof z.ZodError && error.issues.some(issue => issue.path.includes('user_id'))) {
+                    res.status(401).json({ message: "Unauthorized or invalid session." });
+                }
+                else if (error instanceof z.ZodError) {
                     res.status(400).json({ message: "Invalid request data.", details: error.flatten().fieldErrors });
                 }
                 else {
