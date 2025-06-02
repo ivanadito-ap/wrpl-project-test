@@ -1,9 +1,74 @@
 {
-  "id": "f7088572-8480-4b9d-93c8-a0b11f16dc14",
+  "id": "ed6fc4e0-8478-4ef6-8160-8d3ab9ff23bd",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
+    "public.reminders": {
+      "name": "reminders",
+      "schema": "",
+      "columns": {
+        "reminder_id": {
+          "name": "reminder_id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "title": {
+          "name": "title",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "date": {
+          "name": "date",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "time": {
+          "name": "time",
+          "type": "varchar(10)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "notes": {
+          "name": "notes",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "priority": {
+          "name": "priority",
+          "type": "priority",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'low'"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
     "public.country_ids": {
       "name": "country_ids",
       "schema": "",
@@ -35,7 +100,7 @@
       "columns": {
         "user_id": {
           "name": "user_id",
-          "type": "uuid",
+          "type": "varchar",
           "primaryKey": false,
           "notNull": true
         },
@@ -105,19 +170,6 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "job_applications_user_id_users_user_id_fk": {
-          "name": "job_applications_user_id_users_user_id_fk",
-          "tableFrom": "job_applications",
-          "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "user_id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
         "job_applications_country_id_country_ids_country_id_fk": {
           "name": "job_applications_country_id_country_ids_country_id_fk",
           "tableFrom": "job_applications",
@@ -154,7 +206,7 @@
       "columns": {
         "user_id": {
           "name": "user_id",
-          "type": "uuid",
+          "type": "varchar",
           "primaryKey": false,
           "notNull": true
         },
@@ -210,21 +262,7 @@
         }
       },
       "indexes": {},
-      "foreignKeys": {
-        "recruiter_contacts_user_id_users_user_id_fk": {
-          "name": "recruiter_contacts_user_id_users_user_id_fk",
-          "tableFrom": "recruiter_contacts",
-          "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "user_id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
+      "foreignKeys": {},
       "compositePrimaryKeys": {
         "pk_recruiter_contacts": {
           "name": "pk_recruiter_contacts",
@@ -306,6 +344,15 @@
         "Accepted",
         "Rejected",
         "Needs follow-up"
+      ]
+    },
+    "public.priority": {
+      "name": "priority",
+      "schema": "public",
+      "values": [
+        "low",
+        "medium",
+        "high"
       ]
     }
   },

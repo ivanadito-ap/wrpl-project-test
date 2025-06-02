@@ -1,5 +1,5 @@
 import { date } from 'drizzle-orm/mysql-core/index.js';
-import {DbType, Repository} from '../repository/repository.js'
+import {DbType, Priority, Repository} from '../repository/repository.js'
 import bcrypt from 'bcrypt';
 import { Request } from 'express';
 
@@ -210,6 +210,40 @@ postRegister = async (
         } catch (error: any) {
             console.error("Error in service fetching job details:", error);
             return { message: error.message || 'Error fetching job details', status: 500, isError: true, data: null };
+        }
+    }
+    postReminder = async (
+        userId:string, 
+        title:string,
+        date: string,
+        time: string, 
+        notes: string, 
+        priority: Priority,
+    ): Promise<ServiceResponse<null>> => {
+        try {
+            await this.repository.postReminder(userId, title, date, time, notes, priority);
+            return { message: 'Reminder created successfully', status: 201, isError: false, data: null };
+        } catch (error: any) {
+            console.error("Error creating reminder:", error);
+            return { message: error.message || 'Error creating reminder', status: 500, isError: true, data: null };
+        }
+    }
+    getReminders = async (userId: string): Promise<ServiceResponse<Array<any>>> => {
+        try {
+            const reminders = await this.repository.getReminders(userId);
+            return { message: 'success', status: 200, isError: false, data: reminders };
+        } catch (error: any) {
+            console.error("Error fetching reminders:", error);
+            return { message: error.message || 'Error fetching reminders', status: 500, isError: true, data: null };
+        }
+    }
+    deleteReminder = async (userId:string, reminderId: string): Promise<ServiceResponse<null>> => {
+        try {
+            await this.repository.deleteReminder(userId, reminderId);
+            return { message: 'Reminder deleted successfully', status: 200, isError: false, data: null };
+        } catch (error: any) {
+            console.error("Error deleting reminder:", error);
+            return { message: error.message || 'Error deleting reminder', status: 500, isError: true, data: null };
         }
     }
 };

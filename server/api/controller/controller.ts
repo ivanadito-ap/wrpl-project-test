@@ -1,14 +1,15 @@
 // server/api/controller/controller.ts
 
 import { Service, ServiceResponse, UserDetails } from '../service/service.js';
-import { DbType } from "../repository/repository.js";
+import { DbType, Priority } from "../repository/repository.js";
 import { Request, Response, NextFunction } from "express";
 import { z } from "zod";
 import 'express-session';
-
+import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
 // Corrected: Ensure these imports are at the top level
 import { applicationStatusEnum } from '../../db/schema.js'; //
 import { countryIds } from '../../db/country_id_seed.js'; //
+import { date } from 'drizzle-orm/pg-core/index.js';
 
 declare module 'express-session' {
   interface SessionData {
@@ -85,7 +86,16 @@ const deleteJobSchema = z.object({
   dateApplied: z.string().refine((val) => val && !isNaN(Date.parse(val)), { message: "Invalid date format for dateApplied" }),
 }); //
 
-
+const postRemindersSchema = z.object({
+  title: z.string().nonempty("Title is required"),
+  date: z.string().refine((val) => val && !isNaN(Date.parse(val)), { message: "Valid date is required" }), // Ensure date is a valid date string
+  time: z.string().nonempty(), // Optional time field
+  notes: z.string().nonempty(), // Optional notes field
+  priority: z.enum(["low", "medium", "high"]), // Transform to match Priority type
+}); //
+const deleteReminderSchema = z.object({
+  reminderId: z.string().uuid("Invalid reminder ID format"),
+}); //
 export class Controller {
   service: Service;
   constructor(db: DbType) {
@@ -444,4 +454,75 @@ export class Controller {
       }
     }
   };
+  postReminder = async (req: Request, res: Response, next: NextFunction): Promise<Response> => { 
+    try{
+      sessionSchema.parse(req.session);
+      var validationResult = postRemindersSchema.parse(req.body);
+      if (!validationResult) {
+        return res.status(400).json({ message: "Invalid request data." });
+      }
+    } catch (error:any) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid request data.", details: error.flatten().fieldErrors });
+      } else if (error instanceof z.ZodError && error.issues.some(issue => issue.path.includes('user_id'))) {
+        return res.status(401).json({ message: "Unauthorized or invalid session." });
+      } else {
+        console.error("Error in postReminder:", error);
+        return res.status(500).json({ message: "Server error posting reminder." });
+      }
+    }
+    const serviceResponse = await this.service.postReminder(
+      req.session.user_id!,
+      validationResult.title,
+      validationResult.date,
+      validationResult.time , 
+      validationResult.notes, 
+      Priority[validationResult.priority as keyof typeof Priority] // Map string to Priority enum
+    );
+    if (serviceResponse.isError) {
+      console.error("Service error posting reminder:", serviceResponse.message);
+      return res.status(serviceResponse.status).json({ mezssage: serviceResponse.message });
+    } else{
+      console.log("Reminder posted successfully:", serviceResponse.message);
+      return res.status(serviceResponse.status).json({ message: serviceResponse.message });
+    }
+  }
+  getReminders = async (req: Request, res: Response, next: NextFunction): Promise<void> => { 
+    try {
+      sessionSchema.parse(req.session);
+      const userId = req.session.user_id!;
+      const serviceResponse = await this.service.getReminders(userId);
+      res.status(serviceResponse.status).json({ message: serviceResponse.message, data: serviceResponse.data });
+    } catch (error:any) {
+      if (error instanceof z.ZodError && error.issues.some(issue => issue.path.includes('user_id'))) {
+        res.status(401).json({ message: "Unauthorized or invalid session." });
+      } else {
+        console.error("Error in getReminders:", error);
+        res.status(500).json({ message: "Server error fetching reminders." });
+      }
+    }
+  }
+
+  deleteReminder = async (req: Request, res: Response, next: NextFunction): Promise<void> => { 
+    try {
+      sessionSchema.parse(req.session);
+      const validationResult = deleteReminderSchema.parse(req.body);
+
+      const serviceResponse = await this.service.deleteReminder(
+        req.session.user_id!,
+        validationResult.reminderId
+      );
+      console.log(serviceResponse.message);
+      res.status(serviceResponse.status).json({ message: serviceResponse.message });
+    } catch (error:any) {
+      if (error instanceof z.ZodError && error.issues.some(issue => issue.path.includes('user_id'))) {
+        res.status(401).json({ message: "Unauthorized or invalid session." });
+      } else if (error instanceof z.ZodError) {
+        res.status(400).json({ message: "Invalid request data.", details: error.flatten().fieldErrors });
+      } else {
+        console.error("Error in deleteReminder:", error);
+        res.status(500).json({ message: "Server error deleting reminder." });
+      }
+    }
+  }
 }
