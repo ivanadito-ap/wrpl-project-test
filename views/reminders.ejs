@@ -28,15 +28,15 @@
     <main class="flex-grow-1 p-4 overflow-auto">
         <div class="container-fluid">
             <div class="d-flex justify-content-between align-items-center mb-4">
-                <h1>My Reminders</h1>
+                <h2 class="text-white"><i class="bi bi-bell me-2"></i>My Reminders</h2>
                 <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addReminderModal">
-                    <i class="fas fa-plus me-2"></i>Add Reminder
+                    <i class="bi bi-plus-circle me-2"></i>Add Reminder
                 </button>
             </div>
 
             <div class="mb-4">
                 <div class="input-group">
-                    <span class="input-group-text" id="search-addon"><i class="fas fa-search"></i></span>
+                    <span class="input-group-text bg-dark text-white border-secondary" id="search-addon"><i class="bi bi-search"></i></span>
                     <input type="text" class="form-control" id="reminderSearchInput" placeholder="Search reminders by title or notes..." aria-label="Search reminders" aria-describedby="search-addon">
                 </div>
             </div>
@@ -221,7 +221,7 @@
                     col.className = 'col-md-6 col-lg-4 mb-4 d-flex';
 
                     const card = document.createElement('div');
-                    card.className = `card flex-fill shadow-sm ${getPriorityClass(reminder.priority)} ${reminder.completed ? 'bg-light opacity-75' : ''}`;
+                    card.className = `card flex-fill shadow-sm ${getPriorityClass(reminder.priority)} ${reminder.completed ? 'bg-dark opacity-75' : ''}`;
                     
                     const cardBody = document.createElement('div');
                     cardBody.className = 'card-body d-flex flex-column';

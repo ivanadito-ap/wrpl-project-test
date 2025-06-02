@@ -58,8 +58,8 @@
         </div>
         <div class="main-content-area container-fluid mt-md-4">
             <div class="d-flex justify-content-between align-items-center mb-3">
-                <h2 class="text-white">Job Applications</h2>
-                <a href="/open-job-form" class="btn btn-primary">Add Application</a>
+                <h2 class="text-white"><i class="bi bi-briefcase me-2"></i>My Job Applications</h2>
+                <a href="/open-job-form" class="btn btn-primary"><i class="bi bi-plus-circle me-2"></i>Add Application</a>
             </div>
             <div class="mb-4">
                 <div class="input-group">
@@ -191,7 +191,7 @@
                     const card = document.createElement('div');
                     card.className = 'col-lg-4 col-md-6 mb-4';
                     card.innerHTML = `
-                        <div class="card bg-primary text-white border-light h-100">
+                        <div class="card bg-dark text-white border-light h-100">
                             <div class="card-body d-flex flex-column">
                                 <h5 class="card-title">${app.appliedPosition || 'N/A'}</h5>
                                 <h6 class="card-subtitle mb-2 text-light">${app.companyName || 'N/A'}</h6>
