@@ -477,7 +477,7 @@ export class Controller {
       validationResult.date,
       validationResult.time , 
       validationResult.notes, 
-      Priority[validationResult.priority as keyof typeof Priority] // Map string to Priority enum
+      validationResult.priority as Priority // Map string to Priority enum
     );
     if (serviceResponse.isError) {
       console.error("Service error posting reminder:", serviceResponse.message);

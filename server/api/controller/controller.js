@@ -9,7 +9,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 import { Service } from '../service/service.js';
-import { Priority } from "../repository/repository.js";
 import { z } from "zod";
 import 'express-session';
 // Corrected: Ensure these imports are at the top level
@@ -413,7 +412,7 @@ export class Controller {
                     return res.status(500).json({ message: "Server error posting reminder." });
                 }
             }
-            const serviceResponse = yield this.service.postReminder(req.session.user_id, validationResult.title, validationResult.date, validationResult.time, validationResult.notes, Priority[validationResult.priority] // Map string to Priority enum
+            const serviceResponse = yield this.service.postReminder(req.session.user_id, validationResult.title, validationResult.date, validationResult.time, validationResult.notes, validationResult.priority // Map string to Priority enum
             );
             if (serviceResponse.isError) {
                 console.error("Service error posting reminder:", serviceResponse.message);
