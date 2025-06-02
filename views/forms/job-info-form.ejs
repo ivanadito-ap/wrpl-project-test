@@ -1,232 +1,174 @@
 <%- include("../partials/header.ejs") %>
-<div class="container">
-  
+
+<div class="container mt-4 mb-5">
     <main>
-      <div class="py-5 text-center">
-        <div class="d-flex">
-          <div>
-            <a href="javascript:history.back()" class="btn btn-outline-secondary mb-3">
-            ← Back
-          </a>
-        </div> 
-      </div>
-        
-        <h2>Add Your Job Info Here</h2>
-        <p class="lead">Below is an example form built entirely with Bootstrap’s form controls. Each required form group has a validation state that can be triggered by attempting to submit the form without completing it.</p>
-      </div>
-  
-      <div class="container">
-        <div class="col-12">
-          <h4 class="mb-3">Job Details</h4>
-          <form class="needs-validation" novalidate="" action="/submit-job" method="POST">
-            <div class="row g-3">
-              <div class="col-12">
-                <label for="companyName" class="form-label">Company Name</label>
-                <div class="input-group has-validation">
-                  <input type="text" class="form-control" id="companyName" name="companyName" placeholder="Company Name" required="">
-                  <div class="invalid-feedback">
-                    Company name is required.
-                  </div>
-                </div>
-              </div>
-  
-              <div class="col-12">
-                <label for="appliedPosition" class="form-label">Applied Position</label>
-                <div class="input-group has-validation">
-                  <input type="text" class="form-control" id="appliedPosition" name="appliedPosition" placeholder="Applied Position" required>
-                <div class="invalid-feedback">
-                    Applied position is required.
-                  </div>
-                </div>
-              </div>
-  
-              <div class="col-12">
-                <label for="companyAddress" class="form-label">Company Address <span>(Optional)</span></label>
-                <div class="input-group has-validation">
-                  <input type="text" class="form-control" id="companyAddress" name="companyAddress" placeholder="Address">
-                </div>
-              </div>
-  
-              <div class="col-12">
-                <label for="dateApplied" class="form-label">Date of Application</label>
-                <div class="input-group has-validation">
-                    <input type="date" class="form-control" id="dateApplied" name="dateApplied" required>
-                    <div class="invalid-feedback">
-                        Date of application is required.
-                    </div>
-                </div>
-              </div>
-  
-              <div class="col-md-5">
-                <label for="country" class="form-label">Country</label>
-                <select class="form-select" name="country" required>
-                  <option value="">Select a country</option>
-                  <option value="0">Afghanistan</option>
-                  <option value="1">Albania</option>
-                  <option value="2">Algeria</option>
-                  <option value="3">Andorra</option>
-                  <option value="4">Angola</option>
-                  <option value="5">Antigua and Barbuda</option>
-                  <option value="6">Argentina</option>
-                  <option value="7">Armenia</option>
-                  <option value="8">Australia</option>
-                  <option value="9">Austria</option>
-                  <option value="10">Azerbaijan</option>
-                  <option value="11">Bahamas</option>
-                  <option value="12">Bahrain</option>
-                  <option value="13">Bangladesh</option>
-                  <option value="14">Barbados</option>
-                  <option value="15">Belarus</option>
-                  <option value="16">Belgium</option>
-                  <option value="17">Belize</option>
-                  <option value="18">Benin</option>
-                  <option value="19">Bhutan</option>
-                  <option value="20">Bolivia</option>
-                  <option value="21">Bosnia and Herzegovina</option>
-                  <option value="22">Botswana</option>
-                  <option value="23">Brazil</option>
-                  <option value="24">Brunei</option>
-                  <option value="25">Bulgaria</option>
-                  <option value="26">Burkina Faso</option>
-                  <option value="27">Burundi</option>
-                  <option value="28">Cabo Verde</option>
-                  <option value="29">Cambodia</option>
-                  <option value="30">Cameroon</option>
-                  <option value="31">Canada</option>
-                  <option value="32">Central African Republic</option>
-                  <option value="33">Chad</option>
-                  <option value="34">Chile</option>
-                  <option value="35">China</option>
-                  <option value="36">Colombia</option>
-                  <option value="37">Comoros</option>
-                  <option value="38">Congo (Congo-Brazzaville)</option>
-                  <option value="39">Costa Rica</option>
-                  <option value="40">Croatia</option>
-                  <option value="41">Cuba</option>
-                  <option value="42">Cyprus</option>
-                  <option value="43">Czech Republic</option>
-                  <option value="44">Denmark</option>
-                  <option value="45">Djibouti</option>
-                  <option value="46">Dominica</option>
-                  <option value="47">Dominican Republic</option>
-                  <option value="48">Ecuador</option>
-                  <option value="49">Egypt</option>
-                  <option value="50">El Salvador</option>
-                  <option value="51">Equatorial Guinea</option>
-                  <option value="52">Eritrea</option>
-                  <option value="53">Estonia</option>
-                  <option value="54">Eswatini</option>
-                  <option value="55">Ethiopia</option>
-                  <option value="56">Fiji</option>
-                  <option value="57">Finland</option>
-                  <option value="58">France</option>
-                  <option value="59">Gabon</option>
-                  <option value="60">Gambia</option>
-                  <option value="61">Georgia</option>
-                  <option value="62">Germany</option>
-                  <option value="63">Ghana</option>
-                  <option value="64">Greece</option>
-                  <option value="65">Grenada</option>
-                  <option value="66">Guatemala</option>
-                  <option value="67">Guinea</option>
-                  <option value="68">Guinea-Bissau</option>
-                  <option value="69">Guyana</option>
-                  <option value="70">Haiti</option>
-                  <option value="71">Honduras</option>
-                  <option value="72">Hungary</option>
-                  <option value="73">Iceland</option>
-                  <option value="74">India</option>
-                  <option value="75">Indonesia</option>
-                  <option value="76">Iran</option>
-                  <option value="77">Iraq</option>
-                  <option value="78">Ireland</option>
-                  <option value="79">Israel</option>
-                  <option value="80">Italy</option>
-                  <option value="81">Jamaica</option>
-                  <option value="82">Japan</option>
-                  <option value="83">Jordan</option>
-                  <option value="84">Kazakhstan</option>
-                  <option value="85">Kenya</option>
-                  <option value="86">Kiribati</option>
-                  <option value="87">Kuwait</option>
-                  <option value="88">Kyrgyzstan</option>
-                  <option value="89">Laos</option>
-                  <option value="90">Latvia</option>
-                  <option value="91">Lebanon</option>
-                  <option value="92">Lesotho</option>
-                  <option value="93">Liberia</option>
-                  <option value="94">Libya</option>
-                  <option value="95">Liechtenstein</option>
-                  <option value="96">Lithuania</option>
-                  <option value="97">Luxembourg</option>
-                  <option value="98">Madagascar</option>
-                  <option value="99">Malawi</option>
-                  <option value="100">Malaysia</option>
-                  <option value="101">Maldives</option>
-                  <option value="102">Mali</option>
-                  <option value="103">Malta</option>
-                  <option value="104">Marshall Islands</option>
-                  <option value="105">Mauritania</option>
-                  <option value="106">Mauritius</option>
-                  <option value="107">Mexico</option>
-                  <option value="108">Micronesia</option>
-                  <option value="109">Moldova</option>
-                  <option value="110">Monaco</option>
-                  <option value="111">Mongolia</option>
-                  <option value="112">Montenegro</option>
-                  <option value="113">Morocco</option>
-                  <option value="114">Mozambique</option>
-                  <option value="115">Myanmar</option>
-                  <option value="116">Namibia</option>
-                  <option value="117">Nauru</option>
-                  <option value="118">Nepal</option>
-                  <option value="119">Netherlands</option>
-                  <option value="120">New Zealand</option>
-                  <option value="121">Nigeria</option>
-                  <option value="122">North Korea</option>
-                  <option value="123">Norway</option>
-                  <option value="124">United Kingdom</option>
-                  <option value="125">United States</option>
-                  <option value="126">Venezuela</option>
-                  <option value="127">Vietnam</option>
-                  <option value="128">Yemen</option>
-                  <option value="129">Zambia</option>
-                  <option value="130">Zimbabwe</option>              </select>
-                <div class="invalid-feedback">Please select a valid country.</div>
-              </div>
-            
-  
-              <div class="col-12">
-                <label for="companyWebsite" class="form-label">Company's Website OR Application Portal<span>(Optional)</span></label>
-                <input type="text" class="form-control" id="companyWebsite" name="companyWebsite" placeholder="www.company.com">
-              </div>
-            
-
-            <div class="col-md-5 mt-3">
-              <label for="status" class="form-label">Status</label>
-              <select class="form-select" id="status" name="status" required>
-                  <option value="">Choose...</option>
-                  <option value="0">Have not applied</option>
-                  <option value="1">Application sent</option>
-                  <option value="2">On progress</option>
-                  <option value="3">Interview invitation</option>
-                  <option value="4">Accepted</option>
-                  <option value="5">Rejected</option>
-                  <option value="6">Needs follow-up</option>
-              </select>
-              <div class="invalid-feedback">
-                  Status is required.
-              </div>
+        <div class="py-5 text-center">
+            <div class="d-flex justify-content-start mb-3">
+                <a href="javascript:history.back()" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left"></i> Back
+                </a>
             </div>
-
-            <div class="mt-4 col-12">
-              <label for="additionalNotes" class="form-label">Additional Notes <span>(Optional)</span></label>
-              <textarea class="form-control" id="additionalNotes" name="additionalNotes" placeholder="Enter any additional information..." rows="5"></textarea>
-            </div>                         
-            <button class="w-100 btn btn-primary btn-lg mt-5 mb-5" type="submit">Add Job</button>
-          </form>
+            <h2>Add Your Job Info Here</h2>
+            <p class="lead">Fill out the details below to add a new job application to your JobTrek dashboard.</p>
         </div>
-      </div>
+
+        <div class="row justify-content-center">
+            <div class="col-md-10 col-lg-8">
+                <h4 class="mb-3">Job Details</h4>
+
+                <form class="needs-validation" id="addJobForm" action="/submit-job-application" method="POST" novalidate>
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label for="companyName" class="form-label">Company Name</label>
+                            <input type="text" class="form-control <%= (typeof errors !== 'undefined' && errors.companyName) ? 'is-invalid' : (typeof formData !== 'undefined' && formData.companyName ? 'is-valid' : '') %>" 
+                                   id="companyName" name="companyName" placeholder="e.g., Google, Microsoft" required
+                                   value="<%= typeof formData !== 'undefined' ? formData.companyName : '' %>">
+                            <div class="invalid-feedback">
+                                <%= (typeof errors !== 'undefined' && errors.companyName) ? errors.companyName : 'Company name is required.' %>
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                            <label for="appliedPosition" class="form-label">Applied Position</label>
+                            <input type="text" class="form-control <%= (typeof errors !== 'undefined' && errors.appliedPosition) ? 'is-invalid' : (typeof formData !== 'undefined' && formData.appliedPosition ? 'is-valid' : '') %>" 
+                                   id="appliedPosition" name="appliedPosition" placeholder="e.g., Software Engineer, Product Manager" required
+                                   value="<%= typeof formData !== 'undefined' ? formData.appliedPosition : '' %>">
+                            <div class="invalid-feedback">
+                                <%= (typeof errors !== 'undefined' && errors.appliedPosition) ? errors.appliedPosition : 'Applied position is required.' %>
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                            <label for="companyAddress" class="form-label">Company Address <span class="text-muted">(Optional)</span></label>
+                            <input type="text" class="form-control" id="companyAddress" name="companyAddress" placeholder="123 Main St, City, State"
+                                   value="<%= typeof formData !== 'undefined' ? formData.companyAddress : '' %>">
+                        </div>
+
+                        <div class="col-12">
+                            <label for="dateApplied" class="form-label">Date of Application</label>
+                            <input type="date" class="form-control <%= (typeof errors !== 'undefined' && errors.dateApplied) ? 'is-invalid' : (typeof formData !== 'undefined' && formData.dateApplied ? 'is-valid' : '') %>" 
+                                   id="dateApplied" name="dateApplied" required
+                                   value="<%= typeof formData !== 'undefined' ? formData.dateApplied : '' %>">
+                            <div class="invalid-feedback">
+                                <%= (typeof errors !== 'undefined' && errors.dateApplied) ? errors.dateApplied : 'Date of application is required.' %>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="country" class="form-label">Country</label>
+                            <select class="form-select <%= (typeof errors !== 'undefined' && errors.country) ? 'is-invalid' : (typeof formData !== 'undefined' && formData.country ? 'is-valid' : '') %>" 
+                                    id="country" name="country" required>
+                                <option value="">Select a country...</option>
+                                </select>
+                            <div class="invalid-feedback">
+                                <%= (typeof errors !== 'undefined' && errors.country) ? errors.country : 'Please select a valid country.' %>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="status" class="form-label">Status</label>
+                            <select class="form-select <%= (typeof errors !== 'undefined' && errors.status) ? 'is-invalid' : (typeof formData !== 'undefined' && formData.status ? 'is-valid' : '') %>" 
+                                    id="status" name="status" required>
+                                <option value="">Choose status...</option>
+                                </select>
+                            <div class="invalid-feedback">
+                                <%= (typeof errors !== 'undefined' && errors.status) ? errors.status : 'Status is required.' %>
+                            </div>
+                        </div>
+                        
+                        <div class="col-12">
+                            <label for="companyWebsite" class="form-label">Company's Website / Application Portal <span class="text-muted">(Optional)</span></label>
+                            <input type="url" class="form-control" id="companyWebsite" name="companyWebsite" placeholder="https://www.company.com/careers"
+                                   value="<%= typeof formData !== 'undefined' ? formData.companyWebsite : '' %>">
+                        </div>
+
+                        <div class="col-12 mt-3">
+                            <label for="additionalNotes" class="form-label">Additional Notes <span class="text-muted">(Optional)</span></label>
+                            <textarea class="form-control" id="additionalNotes" name="additionalNotes" placeholder="Enter any additional information..." rows="4"><%= typeof formData !== 'undefined' ? formData.additional_notes : '' %></textarea>
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+                    
+                    <% if (typeof errors !== 'undefined' && errors.form) { %>
+                        <div class="alert alert-danger" role="alert">
+                            <%= errors.form %>
+                        </div>
+                    <% } %>
+                     <% if (typeof successMessage !== 'undefined' && successMessage) { %>
+                        <div class="alert alert-success" role="alert">
+                            <%= successMessage %>
+                        </div>
+                    <% } %>
+
+
+                    <button class="w-100 btn btn-primary btn-lg mt-3 mb-5" type="submit">Add Job Application</button>
+                </form>
+            </div>
+        </div>
     </main>
+</div>
 
 <%- include("../partials/footer.ejs") %>
+
+<script>
+    // Standard Bootstrap form validation script (optional if you rely on server-side or built-in browser validation)
+    // This script enables Bootstrap's custom styling for validation states.
+    (() => {
+        'use strict'
+        const forms = document.querySelectorAll('.needs-validation')
+        Array.from(forms).forEach(form => {
+            form.addEventListener('submit', event => {
+                // We are letting the server handle validation primarily with direct POST
+                // but Bootstrap styling can still be triggered if form.checkValidity() is false
+                if (!form.checkValidity()) {
+                    // event.preventDefault() // Don't prevent default if you want it to submit for server-side handling
+                    // event.stopPropagation()
+                }
+                form.classList.add('was-validated')
+            }, false)
+        })
+    })();
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const countrySelect = document.getElementById('country');
+        const statusSelect = document.getElementById('status');
+
+        // --- Populate Country Dropdown ---
+        // 'countries' is passed from the server via res.render() in router.js
+        const countriesData = <%- JSON.stringify(typeof countries !== 'undefined' ? countries : []) %>;
+        const selectedCountry = "<%- typeof formData !== 'undefined' ? formData.country : '' %>";
+
+        if (countrySelect && countriesData.length > 0) {
+            countriesData.forEach(country => {
+                const option = document.createElement('option');
+                option.value = country.country_id;
+                option.textContent = country.country_name;
+                if (String(country.country_id) === selectedCountry) {
+                    option.selected = true;
+                }
+                countrySelect.appendChild(option);
+            });
+        }
+
+        // --- Populate Status Dropdown ---
+        // 'statuses' is passed from the server (enum array)
+        const applicationStatusesData = <%- JSON.stringify(typeof statuses !== 'undefined' ? statuses : []) %>;
+        const selectedStatus = "<%- typeof formData !== 'undefined' ? formData.status : '' %>";
+
+        if (statusSelect && applicationStatusesData.length > 0) {
+            applicationStatusesData.forEach((statusName, index) => {
+                const option = document.createElement('option');
+                option.value = index; 
+                option.textContent = statusName;
+                if (String(index) === selectedStatus) {
+                    option.selected = true;
+                }
+                statusSelect.appendChild(option);
+            });
+        }
+
+        // No fetch-based submission logic needed here anymore for this approach
+        // The form will submit via its action and method attributes.
+    });
+</script>

@@ -1,119 +1,146 @@
-<%- include("../partials/header.ejs") %>
-<div class="container pt-3">
-    <!-- Back Button -->
-    <a href="javascript:history.back()" class="btn btn-outline-secondary mb-3">
-      ← Back
-    </a>
-
+<%- include("../partials/header.ejs") %> <div class="container mt-4 mb-5">
     <main>
-      <div class="py-5 text-center">
-        <h2>Add Important Contacts</h2>
-        <p class="lead">Fill out the form below to save important contacts related to your job applications.</p>
-      </div>
-  
-      <div class="container">
-        <div class="col-12">
-          <h4 class="mb-3">Contact Information</h4>
-          <form class="needs-validation" novalidate="" action="" method="POST">
-            <div class="row g-3">
-              <div class="col-12">
-                <label for="contactName" class="form-label">Contact Name</label>
-                <div class="input-group has-validation">
-                  <input type="text" class="form-control" id="contactName" name="contactName" placeholder="e.g., John Doe" required>
-                <div class="invalid-feedback">
-                    Contact name is required.
-                  </div>
-                </div>
-              </div>
-  
-              <div class="col-12">
-                <label for="companyName" class="form-label">Company</label>
-                <div class="input-group has-validation">
-                  <input type="text" class="form-control" id="companyName" name="companyName" placeholder="e.g., Example Inc." required>
-                  <div class="invalid-feedback">
-                    Company name is required.
-                  </div>
-                </div>
-              </div>
-
-              <div class="col-12">
-                <label for="roleInCompany" class="form-label">Role in the Company</label>
-                <div class="input-group has-validation">
-                  <input type="text" class="form-control" id="roleInCompany" name="roleInCompany" placeholder="e.g., Human Resources" required>
-                  <div class="invalid-feedback">
-                    Position in the company is required.
-                  </div>
-                </div>
-              </div>
-  
-              <div class="col-12">
-                <label for="phoneNumber" class="form-label">Phone Number</label>
-                <div class="input-group has-validation">
-                  <input type="tel" class="form-control" id="phoneNumber" name="phoneNumber" placeholder="e.g., +1 234 567" required>
-                  <div class="invalid-feedback">
-                    Phone number is required.
-                  </div>
-                </div>
-              </div>    
-              
-              <div class="col-12">
-                <label for="contactEmail" class="form-label">Email</label>
-                <div class="input-group has-validation">
-                  <input type="email" class="form-control" id="contactEmail" name="contactEmail" placeholder="e.g., johndoe@mail.com" required>
-                  <div class="invalid-feedback">
-                    Email is required.
-                  </div>
-                </div>
-              </div>   
-
-              <div class="col-12">
-                <label for="linkedinProfile" class="form-label">LinkedIn Profile <span>(Optional, it can be link or username.)</span></label>
-                <div class="input-group has-validation">
-                  <input type="text" class="form-control" id="linkedinProfile" name="linkedinProfile" placeholder="e.g., Salman Faiz Hidayat OR www.linkedin.com/in/salmanfaizhidayat">
-                </div>
-              </div>  
-            <button class="w-100 btn btn-primary btn-lg mt-5 mb-5" type="submit">Save Contacts</button>
-          </form>
+        <div class="py-5 text-center">
+            <div class="d-flex justify-content-start mb-3">
+                <a href="/contacts" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left"></i> Back to Contacts
+                </a>
+            </div>
+            <h2><%= typeof title !== 'undefined' ? title : 'Add New Contact' %></h2>
+            <p class="lead">Enter the details of your new contact below.</p>
         </div>
-      </div>
+
+        <div class="row justify-content-center">
+            <div class="col-md-10 col-lg-8">
+                <h4 class="mb-3">Contact Information</h4>
+                <form class="needs-validation" id="addContactForm" novalidate>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="name" class="form-label">Full Name</label>
+                            <input type="text" class="form-control" id="name" name="name" placeholder="e.g., Jane Doe" required>
+                            <div class="invalid-feedback">Full name is required.</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="contactEmail" class="form-label">Email Address</label>
+                            <input type="email" class="form-control" id="contactEmail" name="contactEmail" placeholder="e.g., jane.doe@example.com" required>
+                            <div class="invalid-feedback">Please enter a valid email address.</div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="companyName" class="form-label">Company Name</label>
+                            <input type="text" class="form-control" id="companyName" name="companyName" placeholder="e.g., Acme Corp" required>
+                            <div class="invalid-feedback">Company name is required.</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="roleInCompany" class="form-label">Role in Company</label>
+                            <input type="text" class="form-control" id="roleInCompany" name="roleInCompany" placeholder="e.g., Hiring Manager, Recruiter" required>
+                            <div class="invalid-feedback">Role in company is required.</div>
+                        </div>
+                        
+                        <div class="col-12">
+                            <label for="phoneNumber" class="form-label">Phone Number</label>
+                            <input type="tel" class="form-control" id="phoneNumber" name="phoneNumber" placeholder="e.g., +1234567890" required>
+                            <div class="invalid-feedback">Phone number is required.</div>
+                        </div>
+
+                        <div class="col-12">
+                            <label for="linkedinProfile" class="form-label">LinkedIn Profile URL <span class="text-muted">(Optional, e.g., https://...)</span></label>
+                            <input type="url" class="form-control" id="linkedinProfile" name="linkedinProfile" placeholder="https://linkedin.com/in/janedoe">
+                             <div class="invalid-feedback">Please enter a valid URL (e.g., https://linkedin.com/in/yourprofile).</div>
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+                    
+                    <div id="contactFormMessageArea" class="mb-3"></div>
+
+                    <button class="w-100 btn btn-primary btn-lg mt-3 mb-5" type="submit">Add Contact</button>
+                </form>
+            </div>
+        </div>
     </main>
 </div>
-<script>
-async function handleSubmit(event) {
-  event.preventDefault();
 
-  const form = event.target;
-  const data = new FormData(form);
-  const value = Object.fromEntries(data.entries());
+<%- include("../partials/footer.ejs") %> <script>
+    // Standard Bootstrap form validation script
+    (() => {
+        'use strict'
+        const forms = document.querySelectorAll('.needs-validation')
+        Array.from(forms).forEach(form => {
+            form.addEventListener('submit', event => {
+                if (!form.checkValidity()) {
+                    event.preventDefault()
+                    event.stopPropagation()
+                }
+                form.classList.add('was-validated')
+            }, false)
+        })
+    })();
 
-  try {
-    const response = await fetch("/api/v1/contacts", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(value)
+    document.addEventListener('DOMContentLoaded', () => {
+        const addContactForm = document.getElementById('addContactForm');
+        const messageArea = document.getElementById('contactFormMessageArea');
+
+        if (addContactForm) {
+            addContactForm.addEventListener('submit', async (event) => {
+                event.preventDefault();
+                addContactForm.classList.add('was-validated');
+
+                if (!addContactForm.checkValidity()) {
+                    messageArea.innerHTML = '<div class="alert alert-danger" role="alert">Please fill in all required fields correctly.</div>';
+                    return;
+                }
+                
+                messageArea.innerHTML = '<div class="alert alert-info" role="alert">Submitting contact...</div>';
+
+                const formDataPayload = {
+                    name: document.getElementById('name').value,
+                    companyName: document.getElementById('companyName').value,
+                    roleInCompany: document.getElementById('roleInCompany').value,
+                    phoneNumber: document.getElementById('phoneNumber').value,
+                    contactEmail: document.getElementById('contactEmail').value,
+                    linkedinProfile: document.getElementById('linkedinProfile').value || null,
+                };
+
+                try {
+                    const response = await fetch('/api/v1/contacts', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(formDataPayload)
+                    });
+
+                    const result = await response.json();
+
+                    if (response.ok) { // Typically 201 for successful POST
+                        messageArea.innerHTML = `<div class="alert alert-success" role="alert">${result.message || 'Contact added successfully! Redirecting...'}</div>`;
+                        addContactForm.reset();
+                        addContactForm.classList.remove('was-validated');
+                        
+                        setTimeout(() => {
+                            window.location.href = '/contacts'; // Redirect to contacts list
+                        }, 1500); // Wait 1.5 seconds
+                    } else {
+                        let errorMsg = result.message || `Error: ${response.statusText}`;
+                        if (result.details) { // Handle Zod error details if present
+                            errorMsg += '<br/>Details:<ul>';
+                            for (const field in result.details) {
+                                if (Array.isArray(result.details[field])) {
+                                    errorMsg += `<li>${field}: ${result.details[field].join(', ')}</li>`;
+                                } else {
+                                     errorMsg += `<li>${field}: ${result.details[field]}</li>`;
+                                }
+                            }
+                            errorMsg += '</ul>';
+                        }
+                        messageArea.innerHTML = `<div class="alert alert-danger" role="alert">${errorMsg}</div>`;
+                         addContactForm.classList.remove('was-validated');
+                    }
+                } catch (error) {
+                    console.error('Submit contact error:', error);
+                    messageArea.innerHTML = '<div class="alert alert-danger" role="alert">An unexpected error occurred. Please try again.</div>';
+                     addContactForm.classList.remove('was-validated');
+                }
+            });
+        }
     });
-
-    if (!response.ok) {
-      const error = await response.json();
-      console.error("Error submitting form:", error);
-      alert("There was an error submitting the form. Please try again.");
-    } else {
-      const result = await response.json();
-      console.log("Contact saved:", result);
-      alert("Contact saved successfully!");
-      form.reset();
-    }
-  } catch (err) {
-    console.error("Network error:", err);
-    alert("Failed to send request. Please check your connection.");
-  }
-}
-
-const form = document.querySelector('form');
-form.addEventListener('submit', handleSubmit);
 </script>
-
-
-<%- include("../partials/footer.ejs") %>

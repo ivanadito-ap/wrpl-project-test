@@ -192,4 +192,24 @@ postRegister = async (
         }
     }
 
+    // Add this to your Service class in server/api/service/service.ts
+
+    async getJobDetails(
+        user_id: string,
+        company_name: string,
+        applied_position: string,
+        date_applied: string
+    ): Promise<ServiceResponse<any | null>> { // Use a specific job detail type if available
+        try {
+            const job = await this.repository.getJobDetails(user_id, company_name, applied_position, date_applied);
+            if (job) {
+                return { message: 'success', status: 200, isError: false, data: job };
+            } else {
+                return { message: 'Job not found', status: 404, isError: true, data: null };
+            }
+        } catch (error: any) {
+            console.error("Error in service fetching job details:", error);
+            return { message: error.message || 'Error fetching job details', status: 500, isError: true, data: null };
+        }
+    }
 };

@@ -1,252 +1,292 @@
-  <%- include("partials/header.ejs") %>
-  <div class="d-flex flex-column flex-md-row">
-    <!-- Start of Sidebar -->
-    <div id="sidebar" class="d-flex flex-row flex-md-column flex-shrink-0 p-3 text-bg-dark w-100 w-md-auto">
-      <a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
-        <img src="/asset/JobTrek_Logo_No_Title.svg" alt="JobTrek Logo" style="height: 40px;" class="me-2">
-        <span class="fs-4">JobTrack</span> <!-- logo -->
-      </a>
-      <hr class="d-none d-md-block">
-      <ul class="nav nav-pills flex-row flex-md-column mb-auto w-100 justify-content-around justify-content-md-start">
-        <li class="nav-item">
-          <a href="/" class="nav-link active" aria-current="page">
-            <i class="bi bi-house-door me-2"></i> Home
-          </a>
-        </li>
-        <li>
-          <a href="/reminders" class="nav-link text-white">
-            <i class="bi bi-bell me-2"></i> Reminders
-          </a>
-        </li>
-        <li>
-          <a href="/contacts" class="nav-link text-white">
-            <i class="bi bi-people me-2"></i> Contacts
-          </a>
-        </li>
-        <li>
-          <a href="/documents" class="nav-link text-white">
-            <i class="bi bi-folder me-2"></i> Documents
-          </a>
-        </li>
-      </ul>
-      <hr class="d-none d-md-block">
-      <div class="dropdown ms-auto ms-md-0 sidebar-footer">
-        <a href="#" id="signout-link" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-          <img src="https://github.com/mdo.png" alt="" width="32" height="32" class="rounded-circle me-2">
-          <strong>mdo</strong>
-        </a>
-        <ul class="dropdown-menu dropdown-menu-dark text-small shadow">
-          <li><a class="dropdown-item" href="#">New project...</a></li>
-          <li><a class="dropdown-item" href="#">Settings</a></li>
-          <li><a class="dropdown-item" href="#">Profile</a></li>
-          <li><hr class="dropdown-divider"></li>
-          <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#signOutModal">Sign out</a></li>
-        </ul>
-      </div>
-    </div>
-    <!-- End of Sidebar -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JobTrek Dashboard</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
 
-     <div class="container mt-4">
-      <div class="d-flex justify-content-between align-items-center mb-3">
-        <h2 class="text-white">Job Applications</h2>
-        <a href="/open-job-form" class="btn btn-primary">Add Application</a>
-      </div>
-      <!-- Sign Out Modal -->
-    <div class="modal fade" id="signOutModal" tabindex="-1" aria-labelledby="signOutModalLabel" aria-hidden="true">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="signOutModalLabel">Confirm Sign Out</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body">
-            Are you sure you want to sign out?
-          </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+    <link rel="stylesheet" href="/styles/main.css">
+    <link rel="stylesheet" href="/styles/sidebar.css">
+    <style>
+        /* Minor adjustments if needed */
+        body {
+            /* Ensure dark background is applied if not in main.css or if overrides are needed */
+            /* background-color: #212529; */ 
+        }
+        .main-content-area {
+            flex-grow: 1;
+            padding: 20px;
+            /* overflow-y: auto; /* Consider if content might exceed viewport height */
+        }
+        /* Ensure alert messages are visible on dark background */
+        .alert-info { background-color: #0dcaf0; border-color: #0dcaf0; color: #000; }
+        .alert-success { background-color: #198754; border-color: #198754; color: #fff; }
+        .alert-danger { background-color: #dc3545; border-color: #dc3545; color: #fff; }
+        .alert-warning { background-color: #ffc107; border-color: #ffc107; color: #000; }
+    </style>
+</head>
+<body class="text-bg-dark">
 
-              <!-- <form action="/logout" method="POST" style="display: inline;">
-                <button type="submit" class="btn btn-danger">Sign Out</button>
-              </form> (Can be added when backend logic for logout is ready.)-->
+    <%- include("partials/header.ejs") %>
 
-              <a href="/login" class="btn btn-danger">Sign Out</a> <!-- Temporary redirect to /login -->
+    <div class="d-flex flex-column flex-md-row">
+        <div id="sidebar" class="d-flex flex-row flex-md-column flex-shrink-0 p-3 text-bg-dark w-100 w-md-auto">
+            <a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
+                <img src="/asset/JobTrek_Logo_No_Title.svg" alt="JobTrek Logo" style="height: 40px;" class="me-2">
+                <span class="fs-4">JobTrack</span>
+            </a>
+            <hr class="d-none d-md-block">
+            <ul class="nav nav-pills flex-row flex-md-column mb-auto w-100 justify-content-around justify-content-md-start">
+                <li class="nav-item">
+                    <a href="/" class="nav-link active" aria-current="page">
+                        <i class="bi bi-house-door me-2"></i> Home
+                    </a>
+                </li>
+                <li><a href="/reminders" class="nav-link text-white"><i class="bi bi-bell me-2"></i> Reminders</a></li>
+                <li><a href="/contacts" class="nav-link text-white"><i class="bi bi-people me-2"></i> Contacts</a></li>
+                <li><a href="/documents" class="nav-link text-white"><i class="bi bi-folder me-2"></i> Documents</a></li>
+            </ul>
+            <hr class="d-none d-md-block">
+            <div class="sidebar-footer mt-auto pt-3"> 
+                <button type="button" class="btn btn-danger w-100" data-bs-toggle="modal" data-bs-target="#signOutModal">
+                    <i class="bi bi-box-arrow-right me-2"></i>Sign Out
+                </button>
             </div>
         </div>
-      </div>
-    </div>
-
-      <!-- Search Bar -->
-      <div class="mb-4">
-        <div class="input-group">
-          <span class="input-group-text bg-dark text-white border-secondary">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
-              <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
-            </svg>
-          </span>
-          <input type="text" id="application-search" class="form-control bg-dark text-white border-secondary" placeholder="Search application..." aria-label="Search contacts">
-        </div>
-      </div>
-
-      <div class="row mt-3" id="applications-container">
-        <!-- Cards will be inserted here -->
-      </div>
-    </div>
-  </div>
-
-  <!-- TEMPORARY PLACEHOLDER DATA -->
-  <script>
-    const exampleApplications = [
-      { appliedPosition: "Data Scientist", companyName: "Google", dateApplied: "15/05/2025", status: "Have not applied" },
-      { appliedPosition: "Data Scientist", companyName: "Google", dateApplied: "15/05/2025", status: "Have not applied" },
-      { appliedPosition: "Data Scientist", companyName: "Google", dateApplied: "15/05/2025", status: "Have not applied" }
-    ];
-
-    // --- Variables for deletion ---
-    let positionToDelete = null;
-    let companyNameToDelete = null; // Changed variable name for clarity
-
-    function renderApplications(applicationsArray) { // Renamed parameter for clarity
-      const container = document.getElementById("applications-container");
-      container.innerHTML = ''; // Clear existing cards
-
-      if (!applicationsArray || applicationsArray.length === 0) {
-          container.innerHTML = '<div class="col-12"><p class="text-white text-center">No applications found.</p></div>';
-          return;
-      }
-
-      applicationsArray.forEach(appItem => { // Renamed loop variable for clarity
-        const card = `
-          <div class="col-md-4 mb-3">
-            <div class="card bg-dark text-white border-light">
-              <div class="card-body">
-                <h5 class="card-title">${appItem.appliedPosition}</h5>
-                <h6 class="card-subtitle mb-2 text-muted">${appItem.companyName}</h6>
-                <p class="card-text">
-                  <strong>Date Applied:</strong> ${appItem.dateApplied}<br>
-                  <strong>Status:</strong> ${appItem.status}
-                </p>
-                <div class="d-flex justify-content-between">
-                  <a href="/viewJobDetail" class="btn btn-primary">View More</a> <button type="button" class="btn btn-danger delete-application-btn"
-                          data-bs-toggle="modal"
-                          data-bs-target="#deleteApplicationModal"
-                          data-applied-position="${appItem.appliedPosition}"
-                          data-company-name="${appItem.companyName}">
-                      Delete
-                  </button>
+        <div class="main-content-area container-fluid mt-md-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2 class="text-white"><i class="bi bi-briefcase me-2"></i>My Job Applications</h2>
+                <a href="/open-job-form" class="btn btn-primary"><i class="bi bi-plus-circle me-2"></i>Add Application</a>
+            </div>
+            <div class="mb-4">
+                <div class="input-group">
+                    <span class="input-group-text bg-dark text-white border-secondary"><i class="bi bi-search"></i></span>
+                    <input type="text" id="application-search" class="form-control bg-dark text-white border-secondary" placeholder="Search applications by title, company, status..." aria-label="Search applications">
                 </div>
-              </div>
             </div>
-          </div>
-        `;
-        container.innerHTML += card;
-      });
-    }
-
-    function filterApplications(searchTerm) {
-      searchTerm = searchTerm.toLowerCase();
-      return exampleApplications.filter(appItem =>
-        appItem.appliedPosition.toLowerCase().includes(searchTerm) ||
-        appItem.companyName.toLowerCase().includes(searchTerm) ||
-        appItem.dateApplied.toLowerCase().includes(searchTerm) ||
-        appItem.status.toLowerCase().includes(searchTerm)
-      );
-    }
-
-    document.addEventListener("DOMContentLoaded", () => {
-      renderApplications(exampleApplications);
-
-      const searchInput = document.getElementById('application-search');
-      searchInput.addEventListener('input', (e) => {
-        const filteredApplications = filterApplications(e.target.value);
-        renderApplications(filteredApplications);
-      });
-
-      // --- Modal Event Listener ---
-      const deleteApplicationModalElement = document.getElementById('deleteApplicationModal');
-      const confirmDeleteAppButton = document.getElementById('confirmDeleteApplicationButton');
-
-      if (deleteApplicationModalElement) {
-        deleteApplicationModalElement.addEventListener('show.bs.modal', function (event) {
-          const button = event.relatedTarget;
-          if (button) {
-            positionToDelete = button.getAttribute('data-applied-position');
-            companyNameToDelete = button.getAttribute('data-company-name');
-          }
-
-          const modalBody = deleteApplicationModalElement.querySelector('#deleteApplicationModalBodyContent');
-          if (modalBody) {
-            modalBody.textContent = `Are you sure you want to delete the application for "${positionToDelete || ''}" at "${companyNameToDelete || ''}"?`;
-          }
-        });
-      }
-
-      if (confirmDeleteAppButton) {
-        confirmDeleteAppButton.addEventListener('click', handleDeleteApplication);
-      }
-    });
-
-    // --- Deletion Handler (TEMPORARY FOR THE FRONTEND, CAN BE REMOVED AFTER BACKEND IS INTEGRATED) ---
-    function handleDeleteApplication() {
-      if (!positionToDelete || !companyNameToDelete) {
-        console.warn("Application details for deletion are missing.");
-
-        const modalInstanceBail = bootstrap.Modal.getInstance(document.getElementById('deleteApplicationModal'));
-        if (modalInstanceBail) modalInstanceBail.hide();
-        return;
-      }
-
-      // Find the index of the application to delete in the original array
-      const indexToDelete = exampleApplications.findIndex(appItem =>
-        appItem.appliedPosition === positionToDelete && appItem.companyName === companyNameToDelete
-      );
-
-      if (indexToDelete > -1) {
-        exampleApplications.splice(indexToDelete, 1); // Remove from the main array
-
-        // Re-filter and re-render to update the view
-        const searchInput = document.getElementById('application-search');
-        const currentSearchTerm = searchInput.value;
-        const filteredApplicationsAfterDeletion = filterApplications(currentSearchTerm);
-        renderApplications(filteredApplicationsAfterDeletion);
-      } else {
-        console.warn("Application not found for deletion:", positionToDelete, companyNameToDelete);
-      }
-
-      // Hide the modal
-      const modalInstance = bootstrap.Modal.getInstance(document.getElementById('deleteApplicationModal'));
-      if (modalInstance) {
-        modalInstance.hide();
-      }
-
-      // Reset stored values
-      positionToDelete = null;
-      companyNameToDelete = null;
-    }
-  </script>
-  </div>
-
-  <!-- Job Deletion Modal -->
-  <div class="modal fade" id="deleteApplicationModal" tabindex="-1" aria-labelledby="deleteApplicationModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-      <div class="modal-content bg-dark text-white">
-        <div class="modal-header border-secondary">
-          <h5 class="modal-title" id="deleteApplicationModalLabel">Confirm Deletion</h5>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            <div id="globalJobsMessage" class="mb-3 text-center"></div>
+            <div class="row mt-3" id="applications-container">
+                </div>
         </div>
-        <div class="modal-body" id="deleteApplicationModalBodyContent">
-          Are you sure you want to delete this application?
-        </div>
-        <div class="modal-footer border-secondary">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-          <button type="button" class="btn btn-danger" id="confirmDeleteApplicationButton">Delete Application</button> <!-- Temporary frontend logic to delete example data for demonstration -->
-
-          <!-- <form action="/deleteJob" method="DELETE" style="display: inline;">
-                <button type="submit" class="btn btn-danger">Delete Contact</button>
-              </form> (Can be added when backend logic for Job Detail deletion is ready.) -->
-
-        </div>
-      </div>
     </div>
-  </div>
 
-  <%- include("partials/footer.ejs") %>
+    <div class="modal fade" id="signOutModal" tabindex="-1" aria-labelledby="signOutModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content text-bg-dark">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="signOutModalLabel">Confirm Sign Out</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">Are you sure you want to sign out?</div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" id="confirmSignOutButton" class="btn btn-danger">Sign Out</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="deleteApplicationModal" tabindex="-1" aria-labelledby="deleteApplicationModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content bg-dark text-white">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title" id="deleteApplicationModalLabel">Confirm Deletion</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="deleteApplicationModalBodyContent">Are you sure you want to delete this application?</div>
+                <div class="modal-footer border-secondary">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" id="confirmDeleteApplicationButton">Delete Application</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <%- include("partials/footer.ejs") %>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- Sign Out Logic ---
+            const confirmSignOutBtn = document.getElementById('confirmSignOutButton');
+            if (confirmSignOutBtn) {
+                confirmSignOutBtn.addEventListener('click', async () => {
+                    try {
+                        const response = await fetch('/api/v1/logout', {
+                            method: 'DELETE',
+                            headers: { 'Content-Type': 'application/json' }
+                        });
+                        const result = await response.json();
+                        if (response.ok) {
+                            window.location.href = '/login';
+                        } else {
+                            displayGlobalMessage('Logout failed: ' + (result.message || 'Server error'), 'danger');
+                        }
+                    } catch (error) {
+                        displayGlobalMessage('An error occurred during logout. Please try again.', 'danger');
+                    }
+                });
+            }
+
+            // --- Job Applications Logic ---
+            const applicationsContainer = document.getElementById("applications-container");
+            const searchInput = document.getElementById('application-search');
+            const deleteApplicationModalElement = document.getElementById('deleteApplicationModal');
+            const confirmDeleteAppButton = document.getElementById('confirmDeleteApplicationButton');
+            let jobToDeleteDetails = null;
+            let currentFetchedJobs = [];
+
+            function displayGlobalMessage(message, type = 'info') {
+                const messageDiv = document.getElementById("globalJobsMessage");
+                if(messageDiv) {
+                    messageDiv.textContent = message;
+                    messageDiv.className = `mb-3 text-center alert alert-${type} ${!message ? 'd-none' : ''}`;
+                }
+            }
+            
+            async function fetchAndRenderApplications() {
+                if (!applicationsContainer) return;
+                displayGlobalMessage("Loading applications...", "info");
+                applicationsContainer.innerHTML = '';
+                try {
+                    const response = await fetch('/api/v1/jobs');
+                    if (response.status === 401 || (response.status === 400 && (await response.clone().json()).message?.toLowerCase().includes('session'))) {
+                        window.location.href = '/login'; return;
+                    }
+                    if (!response.ok) {
+                        const errData = await response.json().catch(() => ({ message: `HTTP error ${response.status}` }));
+                        throw new Error(errData.message);
+                    }
+                    const result = await response.json();
+                    if (result.data && Array.isArray(result.data)) {
+                        currentFetchedJobs = result.data;
+                        if (currentFetchedJobs.length > 0) {
+                            renderApplicationsUI(currentFetchedJobs);
+                            displayGlobalMessage('');
+                        } else {
+                           applicationsContainer.innerHTML = '<div class="col-12"><p class="text-white text-center">No applications found. <a href="/open-job-form">Add one now!</a></p></div>';
+                           displayGlobalMessage('');
+                        }
+                    } else { throw new Error("Invalid data format from server."); }
+                } catch (error) {
+                    displayGlobalMessage(`Failed to load jobs: ${error.message}`, 'danger');
+                    applicationsContainer.innerHTML = '';
+                }
+            }
+
+            function renderApplicationsUI(apps) {
+                if (!applicationsContainer) return;
+                applicationsContainer.innerHTML = '';
+                if (!apps || apps.length === 0) {
+                    applicationsContainer.innerHTML = searchInput && searchInput.value ? 
+                        '<div class="col-12"><p class="text-white text-center">No applications match your search.</p></div>' : 
+                        '<div class="col-12"><p class="text-white text-center">No applications found.</p></div>';
+                    return;
+                }
+                apps.forEach(app => {
+                    const dateAppliedFormatted = new Date(app.dateApplied).toLocaleDateString('en-CA');
+                    const card = document.createElement('div');
+                    card.className = 'col-lg-4 col-md-6 mb-4';
+                    card.innerHTML = `
+                        <div class="card bg-dark text-white border-light h-100">
+                            <div class="card-body d-flex flex-column">
+                                <h5 class="card-title">${app.appliedPosition || 'N/A'}</h5>
+                                <h6 class="card-subtitle mb-2 text-light">${app.companyName || 'N/A'}</h6>
+                                <p class="card-text small">
+                                    Applied: ${new Date(app.dateApplied).toLocaleDateString()}<br>
+                                    Status: <span class="badge bg-info">${app.statusId || 'N/A'}</span>
+                                    ${app.companyAddress ? `<br>Location: ${app.companyAddress}` : ''}
+                                </p>
+                                ${app.additionalNotes ? `<p class="card-text small fst-italic">Notes: ${app.additionalNotes}</p>` : ''}
+                                <div class="mt-auto pt-2 d-flex justify-content-between">
+                                        <a href="/viewJobDetail?companyName=${encodeURIComponent(app.companyName)}&appliedPosition=${encodeURIComponent(app.appliedPosition)}&dateApplied=${dateAppliedFormatted}" class="btn btn-sm btn-outline-light">View More</a>
+                                    <button type="button" class="btn btn-sm btn-outline-danger delete-application-btn"
+                                            data-bs-toggle="modal" data-bs-target="#deleteApplicationModal"
+                                            data-applied-position="${app.appliedPosition}" data-company-name="${app.companyName}"
+                                            data-date-applied="${dateAppliedFormatted}">Delete</button>
+                                </div>
+                            </div>
+                        </div>`;
+                    applicationsContainer.appendChild(card);
+                });
+            }
+
+            function filterAndRender(searchTerm) {
+                const lowerSearchTerm = searchTerm.toLowerCase();
+                const filteredJobs = currentFetchedJobs.filter(app =>
+                    (app.appliedPosition || '').toLowerCase().includes(lowerSearchTerm) ||
+                    (app.companyName || '').toLowerCase().includes(lowerSearchTerm) ||
+                    (app.statusId || '').toLowerCase().includes(lowerSearchTerm) ||
+                    new Date(app.dateApplied).toLocaleDateString().includes(searchTerm)
+                );
+                renderApplicationsUI(filteredJobs);
+            }
+
+            if (searchInput) {
+                searchInput.addEventListener('input', (e) => filterAndRender(e.target.value));
+            }
+
+            if (deleteApplicationModalElement) {
+                // Listener for when the modal is about to be shown
+                deleteApplicationModalElement.addEventListener('show.bs.modal', function (event) {
+                    const button = event.relatedTarget; // Button that triggered the modal
+                    if (button) {
+                        jobToDeleteDetails = {
+                            companyName: button.getAttribute('data-company-name'),
+                            appliedPosition: button.getAttribute('data-applied-position'),
+                            dateApplied: button.getAttribute('data-date-applied')
+                        };
+                        const modalBody = deleteApplicationModalElement.querySelector('#deleteApplicationModalBodyContent');
+                        if (modalBody) modalBody.textContent = `Are you sure you want to delete the application for "${jobToDeleteDetails.appliedPosition}" at "${jobToDeleteDetails.companyName}"?`;
+                    }
+                });
+
+                // Listener for AFTER the modal has been hidden (more robust for cleanup)
+                deleteApplicationModalElement.addEventListener('hidden.bs.modal', function () {
+                    const backdrops = document.querySelectorAll('.modal-backdrop');
+                    backdrops.forEach(backdrop => backdrop.remove());
+                    document.body.classList.remove('modal-open');
+                    document.body.style.overflow = '';
+                    document.body.style.paddingRight = '';
+                    // console.log('Delete modal hidden, backdrop and body styles cleaned up.');
+                });
+            }
+
+            if (confirmDeleteAppButton) {
+                confirmDeleteAppButton.addEventListener('click', async () => {
+                    if (!jobToDeleteDetails) return;
+                    displayGlobalMessage("Deleting application...", "info");
+                    try {
+                        const response = await fetch('/api/v1/jobs', {
+                            method: 'DELETE', headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(jobToDeleteDetails)
+                        });
+                        const result = await response.json();
+                        if (response.ok) {
+                            displayGlobalMessage(result.message || 'Job deleted successfully!', 'success');
+                            fetchAndRenderApplications(); // Refresh
+                        } else {
+                            displayGlobalMessage(`Deletion failed: ${result.message || response.statusText}`, 'danger');
+                        }
+                    } catch (error) {
+                        displayGlobalMessage('An error occurred while deleting the job.', 'danger');
+                    } finally {
+                        const modalInstance = bootstrap.Modal.getInstance(deleteApplicationModalElement);
+                        if (modalInstance) {
+                            modalInstance.hide(); 
+                            // The 'hidden.bs.modal' event listener should now handle the backdrop removal.
+                            // If direct removal in finally is still preferred, it can be added back here,
+                            // but using the event is cleaner.
+                        }
+                        jobToDeleteDetails = null;
+                    }
+                });
+            }
+            fetchAndRenderApplications();
+        });
+    </script>
+</body>
+</html>

@@ -191,4 +191,48 @@ export class Repository{
             throw new Error("An error occured during database call.");
         }
     }
+    // Add this to your Repository class in server/api/repository/repository.ts
+
+    async getJobDetails(
+        user_id: string,
+        company_name: string,
+        applied_position: string,
+        date_applied: string
+    ): Promise<any | null> { // Define a more specific type if you have one for a single job
+        try {
+            const jobDetails = await this.db
+                .select({
+                    companyName: jobsTable.company_name,
+                    appliedPosition: jobsTable.applied_position,
+                    companyAddress: jobsTable.company_address,
+                    dateApplied: jobsTable.date_applied,
+                    countryId: jobsTable.country_id,
+                    countryName: countryIdsTable.country_name, // Fetched from join
+                    companyWebsite: jobsTable.company_website,
+                    statusId: jobsTable.status_id,
+                    additionalNotes: jobsTable.additional_notes,
+                    createdAt: jobsTable.created_at,
+                    updatedAt: jobsTable.updated_at
+                })
+                .from(jobsTable)
+                .leftJoin(countryIdsTable, eq(jobsTable.country_id, countryIdsTable.country_id))
+                .where(
+                    and(
+                        eq(jobsTable.user_id, user_id),
+                        eq(jobsTable.company_name, company_name),
+                        eq(jobsTable.applied_position, applied_position),
+                        eq(jobsTable.date_applied, date_applied)
+                    )
+                )
+                .limit(1); // Ensures only one record is returned
+
+            if (jobDetails.length > 0) {
+                return jobDetails[0];
+            }
+            return null; // Or throw an error if job not found
+        } catch (error) {
+            console.error("Error fetching job details from repository:", error);
+            throw new Error("An error occurred during database call for job details.");
+        }
+    }
 };
