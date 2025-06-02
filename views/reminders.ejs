@@ -1,167 +1,324 @@
-<%- include('partials/header') %>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Reminders - JobTrek</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
-<div class="d-flex flex-column flex-md-row vh-100">
-    <div id="sidebar" class="d-flex flex-row flex-md-column flex-shrink-0 p-3 text-bg-dark">
-        <a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
-            <img src="/asset/JobTrek_Logo_No_Title.svg" alt="JobTrek Logo" style="height: 40px;" class="me-2">
-            <span class="fs-4">JobTrack</span>
-        </a>
-        <hr class="d-none d-md-block">
-        <ul class="nav nav-pills flex-row flex-md-column mb-auto w-100 justify-content-around justify-content-md-start">
-            <li class="nav-item">
-                <a href="/" class="nav-link text-white" aria-current="page">
-                    <i class="bi bi-house-door me-2"></i> Home
-                </a>
-            </li>
-            <li><a href="/reminders" class="nav-link active"><i class="bi bi-bell me-2"></i> Reminders</a></li>
-            <li><a href="/contacts" class="nav-link text-white"><i class="bi bi-people me-2"></i> Contacts</a></li>
-            <li><a href="/documents" class="nav-link text-white"><i class="bi bi-folder me-2"></i> Documents</a></li>
-        </ul>
-        <hr class="d-none d-md-block">
-        <div class="sidebar-footer mt-auto pt-3">
-             <button type="button" class="btn btn-danger w-100" data-bs-toggle="modal" data-bs-target="#signOutModal">
-                <i class="bi bi-box-arrow-right me-2"></i>Sign Out
-            </button>
-        </div>
-    </div>
 
-    <main class="flex-grow-1 p-4 overflow-auto">
-        <div class="container-fluid">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2 class="text-white"><i class="bi bi-bell me-2"></i>My Reminders</h2>
-                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addReminderModal">
-                    <i class="bi bi-plus-circle me-2"></i>Add Reminder
+    <link rel="stylesheet" href="/styles/main.css">
+    <link rel="stylesheet" href="/styles/sidebar.css">
+    <style>
+        body {
+            background-color: #212529; /* Ensure dark theme background */
+        }
+        .main-content-area { /* Renamed from 'main' to avoid conflict with <main> element, and for clarity */
+            flex-grow: 1;
+            padding: 20px;
+            overflow-y: auto; /* Allows content to scroll if it exceeds viewport height */
+            height: calc(100vh - 56px); /* Adjust 56px if your header height is different */
+        }
+        .card {
+            background-color: #343a40; /* Darker card background */
+            border-color: #495057; /* Slightly lighter border for cards */
+        }
+        .card-title, .card-subtitle, .card-text, .form-label, .modal-title, .modal-body {
+            color: #f8f9fa; /* Light text for readability */
+        }
+        .form-control, .form-select {
+            background-color: #495057;
+            color: #f8f9fa;
+            border-color: #6c757d;
+        }
+        .form-control:focus, .form-select:focus {
+            background-color: #495057;
+            color: #f8f9fa;
+            border-color: #86b7fe;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+        }
+        .form-control::placeholder {
+            color: #adb5bd;
+        }
+        .modal-content {
+             background-color: #2c3034; /* Dark modal background */
+        }
+         .btn-close-white {
+            filter: invert(1) grayscale(100%) brightness(200%);
+        }
+        /* Custom styles from your previous example */
+        .shadow-danger-sm { box-shadow: 0 .125rem .25rem rgba(220, 53, 69, .4) !important; }
+        .shadow-warning-sm { box-shadow: 0 .125rem .25rem rgba(255, 193, 7, .4) !important; }
+        .shadow-success-sm { box-shadow: 0 .125rem .25rem rgba(25, 135, 84, .4) !important; }
+
+        @media (min-width: 768px) {
+          #sidebar {
+            height: 100vh !important;
+            position: sticky;
+            top: 0;
+          }
+         .main-content-area {
+             height: 100vh;
+          }
+        }
+         @media (max-width: 767.98px) {
+           #sidebar {
+             height: auto !important;
+             overflow-y: visible;
+           }
+          .main-content-area {
+             height: auto;
+           }
+        }
+    </style>
+</head>
+<body class="text-bg-dark">
+
+    <%- include('partials/header.ejs') %>
+
+    <div class="d-flex flex-column flex-md-row">
+        <div id="sidebar" class="d-flex flex-row flex-md-column flex-shrink-0 p-3 text-bg-dark">
+            <a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
+                <img src="/asset/JobTrek_Logo_No_Title.svg" alt="JobTrek Logo" style="height: 40px;" class="me-2">
+                <span class="fs-4">JobTrek</span> </a>
+            <hr class="d-none d-md-block">
+            <ul class="nav nav-pills flex-row flex-md-column mb-auto w-100 justify-content-around justify-content-md-start">
+                <li class="nav-item">
+                    <a href="/" class="nav-link text-white">
+                        <i class="bi bi-house-door me-2"></i> Home
+                    </a>
+                </li>
+                <li><a href="/reminders" class="nav-link active" aria-current="page"><i class="bi bi-bell me-2"></i> Reminders</a></li>
+                <li><a href="/contacts" class="nav-link text-white"><i class="bi bi-people me-2"></i> Contacts</a></li>
+                <li><a href="/documents" class="nav-link text-white"><i class="bi bi-folder me-2"></i> Documents</a></li>
+            </ul>
+            <hr class="d-none d-md-block">
+            <div class="sidebar-footer mt-auto pt-3">
+                 <button type="button" class="btn btn-danger w-100" data-bs-toggle="modal" data-bs-target="#signOutModal">
+                    <i class="bi bi-box-arrow-right me-2"></i>Sign Out
                 </button>
             </div>
+        </div>
 
-            <div class="mb-4">
-                <div class="input-group">
-                    <span class="input-group-text bg-dark text-white border-secondary" id="search-addon"><i class="bi bi-search"></i></span>
-                    <input type="text" class="form-control" id="reminderSearchInput" placeholder="Search reminders by title or notes..." aria-label="Search reminders" aria-describedby="search-addon">
+        <div class="main-content-area">
+            <div class="container-fluid">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2 class="text-white"><i class="bi bi-bell me-2"></i>My Reminders</h2>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addReminderModal">
+                        <i class="bi bi-plus-circle me-2"></i>Add Reminder
+                    </button>
                 </div>
-            </div>
 
-            <div class="modal fade" id="addReminderModal" tabindex="-1" aria-labelledby="addReminderModalLabel" aria-hidden="true">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="addReminderModalLabel">Add New Reminder</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            <form id="reminderForm">
-                                <input type="hidden" id="reminderId">
-                                <div class="mb-3">
-                                    <label for="reminderTitle" class="form-label">Title</label>
-                                    <input type="text" class="form-control" id="reminderTitle" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label for="reminderDate" class="form-label">Date</label>
-                                    <input type="date" class="form-control" id="reminderDate" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label for="reminderTime" class="form-label">Time (Optional)</label>
-                                    <input type="time" class="form-control" id="reminderTime">
-                                </div>
-                                <div class="mb-3">
-                                    <label for="reminderNotes" class="form-label">Notes (Optional)</label>
-                                    <textarea class="form-control" id="reminderNotes" rows="3"></textarea>
-                                </div>
-                                <div class="mb-3">
-                                    <label for="reminderPriority" class="form-label">Priority</label>
-                                    <select class="form-select" id="reminderPriority">
-                                        <option value="low">Low</option>
-                                        <option value="medium" selected>Medium</option>
-                                        <option value="high">High</option>
-                                    </select>
-                                </div>
-                                 <div class="form-check mb-3">
-                                    <input class="form-check-input" type="checkbox" id="reminderCompleted">
-                                    <label class="form-check-label" for="reminderCompleted">
-                                        Mark as Completed
-                                    </label>
-                                </div>
-                            </form>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                            <button type="button" class="btn btn-primary" id="saveReminderButton">Save Reminder</button>
-                        </div>
+                <div class="mb-4">
+                    <div class="input-group">
+                        <span class="input-group-text bg-dark text-white border-secondary" id="search-addon"><i class="bi bi-search"></i></span>
+                        <input type="text" class="form-control bg-dark text-white border-secondary" id="reminderSearchInput" placeholder="Search reminders by title or notes..." aria-label="Search reminders" aria-describedby="search-addon">
                     </div>
                 </div>
-            </div>
-
-            <div id="remindersList" class="row">
-                <p id="noRemindersText" class="text-muted col-12 text-center py-5 fs-5" style="display: none;">
+                
+                <div id="apiMessage" class="mb-3"></div> <div id="remindersList" class="row">
+                    </div>
+                <p id="noRemindersText" class="text-white-50 col-12 text-center py-5 fs-5" style="display: none;">
                     <i class="fas fa-folder-open fa-3x mb-3 d-block"></i>
                     No reminders yet. <br>Click "Add Reminder" to get started!
                 </p>
             </div>
         </div>
-    </main>
-</div>
+    </div>
 
-<div class="modal fade" id="signOutModal" tabindex="-1" aria-labelledby="signOutModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="signOutModalLabel">Confirm Sign Out</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                Are you sure you want to sign out?
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-danger" id="confirmSignOutButton">Sign Out</button>
+    <div class="modal fade" id="addReminderModal" tabindex="-1" aria-labelledby="addReminderModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content text-bg-dark">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addReminderModalLabel">Add New Reminder</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="reminderForm">
+                        <div class="mb-3">
+                            <label for="reminderTitle" class="form-label">Title</label>
+                            <input type="text" class="form-control" id="reminderTitle" name="title" required>
+                            <div class="invalid-feedback" id="titleError"></div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="reminderDate" class="form-label">Date</label>
+                                <input type="date" class="form-control" id="reminderDate" name="date" required>
+                                <div class="invalid-feedback" id="dateError"></div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="reminderTime" class="form-label">Time</label>
+                                <input type="time" class="form-control" id="reminderTime" name="time" required>
+                                 <div class="invalid-feedback" id="timeError"></div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="reminderPriority" class="form-label">Priority</label>
+                            <select class="form-select" id="reminderPriority" name="priority">
+                                <option value="low">Low</option>
+                                <option value="medium" selected>Medium</option>
+                                <option value="high">High</option>
+                            </select>
+                            <div class="invalid-feedback" id="priorityError"></div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="reminderNotes" class="form-label">Notes</label>
+                            <textarea class="form-control" id="reminderNotes" name="notes" rows="3"></textarea>
+                             <div class="invalid-feedback" id="notesError"></div>
+                        </div>
+                         <div id="modalFormError" class="text-danger mt-2"></div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="saveReminderButton">Save Reminder</button>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
-<div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="deleteConfirmModalLabel">Confirm Deletion</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                Are you sure you want to delete this reminder? This action cannot be undone.
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-danger" id="confirmDeleteReminderButton">Delete</button>
+    <div class="modal fade" id="signOutModal" tabindex="-1" aria-labelledby="signOutModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content text-bg-dark">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="signOutModalLabel">Confirm Sign Out</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">Are you sure you want to sign out?</div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" id="confirmSignOutButton">Sign Out</button>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
+    <div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content text-bg-dark">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteConfirmModalLabel">Confirm Deletion</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="deleteReminderModalBodyContent">
+                    Are you sure you want to delete this reminder? This action cannot be undone.
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" id="confirmDeleteReminderButton">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
-<script>
+    <%- include('partials/footer.ejs') %>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
     document.addEventListener('DOMContentLoaded', function () {
         const reminderForm = document.getElementById('reminderForm');
         const saveReminderButton = document.getElementById('saveReminderButton');
-        const remindersList = document.getElementById('remindersList');
+        const remindersListDiv = document.getElementById('remindersList');
         const noRemindersText = document.getElementById('noRemindersText');
-        const reminderSearchInput = document.getElementById('reminderSearchInput'); // Search input
+        const reminderSearchInput = document.getElementById('reminderSearchInput');
         
-        // Modals
         const addReminderModalEl = document.getElementById('addReminderModal');
-        const addReminderModal = new bootstrap.Modal(addReminderModalEl);
-        const addReminderModalLabel = document.getElementById('addReminderModalLabel');
+        const addReminderBsModal = new bootstrap.Modal(addReminderModalEl);
         
         const deleteConfirmModalEl = document.getElementById('deleteConfirmModal');
-        const deleteConfirmModal = new bootstrap.Modal(deleteConfirmModalEl);
+        const deleteConfirmBsModal = new bootstrap.Modal(deleteConfirmModalEl);
         const confirmDeleteReminderButton = document.getElementById('confirmDeleteReminderButton');
-
-        const signOutModalEl = document.getElementById('signOutModal');
+        const deleteReminderModalBody = document.getElementById('deleteReminderModalBodyContent');
+        
         const confirmSignOutButton = document.getElementById('confirmSignOutButton');
+        const signOutModalEl = document.getElementById('signOutModal'); 
 
-        let allReminders = JSON.parse(localStorage.getItem('reminders')) || []; // Renamed to allReminders
-        let editingReminderId = null;
+        const apiMessageDiv = document.getElementById('apiMessage');
+        const modalFormErrorDiv = document.getElementById('modalFormError');
+
+        let currentFetchedReminders = []; 
         let reminderIdToDelete = null;
 
+        function cleanupModalEffects() {
+            const backdrops = document.querySelectorAll('.modal-backdrop');
+            backdrops.forEach(backdrop => backdrop.remove());
+            document.body.classList.remove('modal-open');
+            document.body.style.overflow = '';
+            document.body.style.paddingRight = '';
+        }
+
+        if (addReminderModalEl) {
+            addReminderModalEl.addEventListener('hidden.bs.modal', function () {
+                cleanupModalEffects();
+                resetForm(); 
+            });
+        }
+
+        if (deleteConfirmModalEl) {
+            deleteConfirmModalEl.addEventListener('hidden.bs.modal', function () {
+                cleanupModalEffects();
+            });
+        }
+        
+        if (signOutModalEl) {
+            signOutModalEl.addEventListener('hidden.bs.modal', function () {
+                cleanupModalEffects();
+            });
+        }
+
+        function displayApiMessage(message, type = 'info') {
+            if(apiMessageDiv) {
+                apiMessageDiv.innerHTML = `<div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                                            ${escapeHTML(message)}
+                                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                          </div>`;
+            }
+        }
+
+        function clearModalValidationMessages() {
+            document.getElementById("titleError").textContent = "";
+            document.getElementById("dateError").textContent = "";
+            document.getElementById("timeError").textContent = "";
+            document.getElementById("priorityError").textContent = "";
+            if(modalFormErrorDiv) modalFormErrorDiv.textContent = "";
+
+            document.getElementById("reminderTitle").classList.remove('is-invalid');
+            document.getElementById("reminderDate").classList.remove('is-invalid');
+            document.getElementById("reminderTime").classList.remove('is-invalid');
+            document.getElementById("reminderPriority").classList.remove('is-invalid');
+        }
+
+        function displayModalValidationErrors(errors) {
+            clearModalValidationMessages();
+            if (errors.title) {
+                document.getElementById("titleError").textContent = errors.title.join(", ");
+                document.getElementById("reminderTitle").classList.add('is-invalid');
+            }
+            if (errors.date) {
+                document.getElementById("dateError").textContent = errors.date.join(", ");
+                document.getElementById("reminderDate").classList.add('is-invalid');
+            }
+            if (errors.time) {
+                document.getElementById("timeError").textContent = errors.time.join(", ");
+                document.getElementById("reminderTime").classList.add('is-invalid');
+            }
+            if (errors.priority) { 
+                document.getElementById("priorityError").textContent = errors.priority.join(", ");
+                document.getElementById("reminderPriority").classList.add('is-invalid');
+            }
+             if (errors.notes) { // Added notes error handling just in case
+                const notesErrorDiv = document.getElementById("notesError"); // Assuming it exists
+                if(notesErrorDiv) notesErrorDiv.textContent = errors.notes.join(", ");
+                document.getElementById("reminderNotes").classList.add('is-invalid');
+            }
+            if (errors.form && modalFormErrorDiv) { 
+                modalFormErrorDiv.textContent = errors.form;
+            }
+        }
+        
         function getPriorityClass(priority) {
             switch (priority) {
                 case 'high': return 'border-danger shadow-danger-sm';
@@ -170,8 +327,9 @@
                 default: return 'border-secondary';
             }
         }
+
         function getPriorityBadgeClass(priority) {
-            switch (priority) {
+             switch (priority) {
                 case 'high': return 'bg-danger';
                 case 'medium': return 'bg-warning text-dark';
                 case 'low': return 'bg-success';
@@ -179,326 +337,236 @@
             }
         }
 
-        function renderReminders() {
-            remindersList.innerHTML = ''; 
-            const searchTerm = reminderSearchInput.value.toLowerCase();
-            
-            // Filter reminders based on search term
-            const filteredReminders = allReminders.filter(reminder => {
-                const titleMatch = reminder.title.toLowerCase().includes(searchTerm);
-                const notesMatch = reminder.notes ? reminder.notes.toLowerCase().includes(searchTerm) : false;
-                return titleMatch || notesMatch;
-            });
-
-            if (allReminders.length === 0) { // Check original list for "No reminders yet"
-                if (noRemindersText) {
+        function renderRemindersUI(remindersToRender) {
+            remindersListDiv.innerHTML = '';
+            if (remindersToRender.length === 0) {
+                if (reminderSearchInput.value) {
+                    noRemindersText.innerHTML = `<i class="fas fa-search fa-3x mb-3 d-block"></i>No reminders found matching your search for "<strong>${escapeHTML(reminderSearchInput.value)}</strong>".`;
+                } else {
                     noRemindersText.innerHTML = '<i class="fas fa-folder-open fa-3x mb-3 d-block"></i>No reminders yet. <br>Click "Add Reminder" to get started!';
-                    noRemindersText.style.display = 'block';
                 }
-            } else if (filteredReminders.length === 0 && searchTerm) { // Check filtered list if search term exists
-                 if (noRemindersText) {
-                    noRemindersText.innerHTML = '<i class="fas fa-search fa-3x mb-3 d-block"></i>No reminders found matching your search for "<strong>' + escapeHTML(searchTerm) + '</strong>".';
-                    noRemindersText.style.display = 'block';
-                }
-            }
-            else { // If there are reminders (either all or filtered)
-                if (noRemindersText) {
-                    noRemindersText.style.display = 'none';
-                }
-                
-                // Sort the filtered reminders
-                filteredReminders.sort((a, b) => {
-                    if (a.completed !== b.completed) {
-                        return a.completed ? 1 : -1;
-                    }
-                    const dateA = new Date(a.date + (a.time ? `T${a.time}` : 'T00:00:00'));
-                    const dateB = new Date(b.date + (b.time ? `T${b.time}` : 'T00:00:00'));
-                    return dateA - dateB;
-                });
-
-                filteredReminders.forEach(reminder => { // Iterate over filteredReminders
-                    const col = document.createElement('div');
-                    col.className = 'col-md-6 col-lg-4 mb-4 d-flex';
-
-                    const card = document.createElement('div');
-                    card.className = `card flex-fill shadow-sm ${getPriorityClass(reminder.priority)} ${reminder.completed ? 'bg-dark opacity-75' : ''}`;
-                    
-                    const cardBody = document.createElement('div');
-                    cardBody.className = 'card-body d-flex flex-column';
-
-                    const title = document.createElement('h5');
-                    title.className = `card-title mb-1 ${reminder.completed ? 'text-decoration-line-through text-muted' : ''}`;
-                    title.textContent = reminder.title;
-
+                noRemindersText.style.display = 'block';
+            } else {
+                noRemindersText.style.display = 'none';
+                remindersToRender.forEach(reminder => {
                     const dateText = new Date(reminder.date + 'T00:00:00').toLocaleDateString(undefined, { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
                     const timeText = reminder.time ? new Date(`1970-01-01T${reminder.time}`).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: true }) : '';
                     
-                    const dateTime = document.createElement('p');
-                    dateTime.className = `card-subtitle mb-2 small ${reminder.completed ? 'text-muted' : 'text-primary'}`;
-                    dateTime.innerHTML = `<i class="fas fa-calendar-alt me-1"></i>${dateText}${timeText ? ` <i class="fas fa-clock ms-2 me-1"></i>${timeText}` : ''}`;
-
-                    const notes = document.createElement('p');
-                    notes.className = `card-text flex-grow-1 small ${reminder.completed ? 'text-decoration-line-through text-muted' : ''}`;
-                    notes.innerHTML = reminder.notes ? reminder.notes.replace(/\n/g, '<br>') : '<em class="text-muted">No notes.</em>';
-
-                    const priorityBadge = document.createElement('span');
-                    priorityBadge.className = `badge ${getPriorityBadgeClass(reminder.priority)} mb-3 align-self-start`;
-                    priorityBadge.textContent = `${reminder.priority.charAt(0).toUpperCase() + reminder.priority.slice(1)} Priority`;
-
-                    const cardFooter = document.createElement('div');
-                    cardFooter.className = 'card-footer bg-transparent border-top-0 mt-auto pt-2 pb-2 px-3';
-                    
-                    const actionsDiv = document.createElement('div');
-                    actionsDiv.className = 'd-flex justify-content-between align-items-center';
-
-                    const completedCheckboxDiv = document.createElement('div');
-                    completedCheckboxDiv.className = 'form-check form-switch';
-                    const completedCheckbox = document.createElement('input');
-                    completedCheckbox.type = 'checkbox';
-                    completedCheckbox.className = 'form-check-input';
-                    completedCheckbox.role = 'switch';
-                    completedCheckbox.id = `complete-${reminder.id}`;
-                    completedCheckbox.checked = reminder.completed;
-                    completedCheckbox.onchange = () => toggleComplete(reminder.id);
-                    const completedLabel = document.createElement('label');
-                    completedLabel.className = 'form-check-label small visually-hidden';
-                    completedLabel.setAttribute('for', `complete-${reminder.id}`);
-                    completedLabel.textContent = 'Done';
-                    
-                    completedCheckboxDiv.appendChild(completedCheckbox);
-                    completedCheckboxDiv.appendChild(completedLabel);
-
-                    const buttonsDiv = document.createElement('div');
-
-                    const editButton = document.createElement('button');
-                    editButton.className = 'btn btn-sm btn-outline-secondary me-2 py-1 px-2';
-                    editButton.innerHTML = '<i class="fas fa-edit"></i> Edit';
-                    editButton.onclick = () => editReminder(reminder.id);
-                     if (reminder.completed) editButton.disabled = true;
-
-                    const deleteButton = document.createElement('button');
-                    deleteButton.className = 'btn btn-sm btn-outline-danger py-1 px-2';
-                    deleteButton.innerHTML = '<i class="fas fa-trash"></i> Delete';
-                    deleteButton.onclick = () => confirmDelete(reminder.id);
-
-                    buttonsDiv.appendChild(editButton);
-                    buttonsDiv.appendChild(deleteButton);
-                    
-                    actionsDiv.appendChild(completedCheckboxDiv);
-                    actionsDiv.appendChild(buttonsDiv);
-
-                    cardBody.appendChild(title);
-                    cardBody.appendChild(dateTime);
-                    cardBody.appendChild(priorityBadge);
-                    cardBody.appendChild(notes);
-                    
-                    cardFooter.appendChild(actionsDiv);
-
-                    card.appendChild(cardBody);
-                    card.appendChild(cardFooter);
-                    col.appendChild(card);
-                    remindersList.appendChild(col);
+                    const card = `
+                        <div class="col-md-6 col-lg-4 mb-4">
+                            <div class="card h-100 text-white ${getPriorityClass(reminder.priority)}">
+                                <div class="card-body d-flex flex-column">
+                                    <h5 class="card-title">${escapeHTML(reminder.title)}</h5>
+                                    <p class="card-subtitle mb-2 small text-white-50">
+                                        <i class="fas fa-calendar-alt me-1"></i>${dateText}
+                                        ${timeText ? ` <i class="fas fa-clock ms-2 me-1"></i>${timeText}` : ''}
+                                    </p>
+                                    <span class="badge ${getPriorityBadgeClass(reminder.priority)} mb-3 align-self-start">${escapeHTML(reminder.priority.charAt(0).toUpperCase() + reminder.priority.slice(1))} Priority</span>
+                                    ${reminder.notes ? `<p class="card-text small flex-grow-1">${escapeHTML(reminder.notes).replace(/\n/g, '<br>')}</p>` : '<p class="card-text small flex-grow-1"><em>No notes.</em></p>'}
+                                    <p class="card-text mt-auto pt-2"><small class="text-white-50">Added: ${new Date(reminder.createdAt).toLocaleString()}</small></p>
+                                    <div class="mt-2">
+                                        <button class="btn btn-sm btn-outline-danger delete-reminder-btn"
+                                                data-reminder-id="${reminder.reminderId}"
+                                                data-reminder-title="${escapeHTML(reminder.title)}">
+                                            <i class="bi bi-trash"></i> Delete
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>`;
+                    remindersListDiv.innerHTML += card;
                 });
             }
         }
 
-        function saveReminders() {
-            localStorage.setItem('reminders', JSON.stringify(allReminders)); // Save allReminders
-            renderReminders(); // Re-render which will apply current search filter
-        }
-
-        function resetForm() {
-            reminderForm.reset();
-            document.getElementById('reminderId').value = '';
-            editingReminderId = null;
-            addReminderModalLabel.textContent = 'Add New Reminder';
-            document.getElementById('reminderCompleted').checked = false;
-            Array.from(reminderForm.elements).forEach(el => el.classList.remove('is-invalid'));
-        }
-
-        if(addReminderModalEl) {
-            addReminderModalEl.addEventListener('hidden.bs.modal', resetForm);
-        }
-        
-        document.querySelector('[data-bs-target="#addReminderModal"]').addEventListener('click', () => {
-            resetForm();
-        });
-
-        saveReminderButton.addEventListener('click', function () {
-            const id = document.getElementById('reminderId').value || Date.now().toString();
-            const titleInput = document.getElementById('reminderTitle');
-            const dateInput = document.getElementById('reminderDate');
-            
-            const title = titleInput.value.trim();
-            const date = dateInput.value;
-            const time = document.getElementById('reminderTime').value;
-            const notes = document.getElementById('reminderNotes').value.trim();
-            const priority = document.getElementById('reminderPriority').value;
-            const completed = document.getElementById('reminderCompleted').checked;
-
-            let isValid = true;
-            if (!title) {
-                titleInput.classList.add('is-invalid');
-                isValid = false;
-            } else {
-                titleInput.classList.remove('is-invalid');
-            }
-            if (!date) {
-                dateInput.classList.add('is-invalid');
-                isValid = false;
-            } else {
-                dateInput.classList.remove('is-invalid');
-            }
-
-            if (!isValid) {
-                return;
-            }
-
-            if (editingReminderId) {
-                const reminderIndex = allReminders.findIndex(r => r.id === editingReminderId); // Use allReminders
-                if (reminderIndex > -1) {
-                    allReminders[reminderIndex] = { id: editingReminderId, title, date, time, notes, priority, completed };
-                }
-                editingReminderId = null;
-            } else {
-                allReminders.push({ id, title, date, time, notes, priority, completed }); // Use allReminders
-            }
-
-            saveReminders();
-            resetForm();
-            addReminderModal.hide();
-        });
-
-        window.editReminder = function (id) {
-            const reminder = allReminders.find(r => r.id === id); // Use allReminders
-            if (reminder) {
-                editingReminderId = id;
-                document.getElementById('reminderId').value = reminder.id;
-                document.getElementById('reminderTitle').value = reminder.title;
-                document.getElementById('reminderDate').value = reminder.date;
-                document.getElementById('reminderTime').value = reminder.time || '';
-                document.getElementById('reminderNotes').value = reminder.notes || '';
-                document.getElementById('reminderPriority').value = reminder.priority || 'medium';
-                document.getElementById('reminderCompleted').checked = reminder.completed || false;
-                addReminderModalLabel.textContent = 'Edit Reminder';
-                addReminderModal.show();
-            }
-        }
-
-        window.confirmDelete = function (id) {
-            reminderIdToDelete = id;
-            deleteConfirmModal.show();
-        }
-
-        confirmDeleteReminderButton.addEventListener('click', function() {
-            if (reminderIdToDelete) {
-                allReminders = allReminders.filter(reminder => reminder.id !== reminderIdToDelete); // Use allReminders
-                saveReminders();
-                reminderIdToDelete = null;
-            }
-            deleteConfirmModal.hide();
-        });
-        
-        window.toggleComplete = function (id) {
-            const reminderIndex = allReminders.findIndex(r => r.id === id); // Use allReminders
-            if (reminderIndex > -1) {
-                allReminders[reminderIndex].completed = !allReminders[reminderIndex].completed;
-                saveReminders();
-            }
-        }
-
-        // Event listener for the search input
-        reminderSearchInput.addEventListener('input', renderReminders);
-        
-        async function handleSignOut() {
+        async function fetchAndDisplayReminders() {
+            displayApiMessage("Loading reminders...", "info");
             try {
-                const response = await fetch('/api/v1/logout', {
-                    method: 'DELETE',
-                    headers: { 'Content-Type': 'application/json' }
-                });
+                const response = await fetch('/api/v1/reminders');
+                if (response.status === 401) {
+                    window.location.href = '/login?message=Session expired. Please login again.';
+                    return;
+                }
                 const result = await response.json();
-                if (response.ok && result.success) {
-                    window.location.href = '/login?message=' + encodeURIComponent(result.message || 'You have been logged out.');
-                } else {
-                    alert('Logout failed: ' + (result.message || 'An unknown error occurred.'));
+                if (!response.ok) {
+                    throw new Error(result.message || `HTTP error ${response.status}`);
+                }
+                console.log('Client-side: Data received from API /api/v1/reminders:', result.data);
+                currentFetchedReminders = result.data || [];
+                currentFetchedReminders.sort((a, b) => new Date(a.date) - new Date(b.date) || a.time.localeCompare(b.time));
+                renderRemindersUI(currentFetchedReminders);
+                if (apiMessageDiv.innerHTML.includes("Loading reminders...")) { // Clear only if it's the loading message
+                    apiMessageDiv.innerHTML = ''; 
                 }
             } catch (error) {
-                console.error('Client-side error during logout:', error);
-                alert('An error occurred while trying to log out. Please check your connection and try again.');
+                console.error('Error fetching reminders:', error);
+                displayApiMessage(`Failed to load reminders: ${error.message}`, 'danger');
+                renderRemindersUI([]); 
             }
         }
-
-        if (confirmSignOutButton) {
-            confirmSignOutButton.addEventListener('click', handleSignOut);
+        
+        if (reminderSearchInput) {
+             reminderSearchInput.addEventListener('input', () => {
+                const searchTerm = reminderSearchInput.value.toLowerCase();
+                const filtered = currentFetchedReminders.filter(r => 
+                    (r.title && r.title.toLowerCase().includes(searchTerm)) ||
+                    (r.notes && r.notes.toLowerCase().includes(searchTerm))
+                );
+                renderRemindersUI(filtered);
+            });
         }
         
-        // Helper function to escape HTML for display in messages
+        function resetForm() {
+            if(reminderForm) {
+                reminderForm.reset();
+                 // Set default priority after reset if needed, e.g., to medium
+                const prioritySelect = document.getElementById('reminderPriority');
+                if (prioritySelect) prioritySelect.value = 'medium';
+            }
+            clearModalValidationMessages();
+        }
+        
+        // When the Add Reminder modal is opened, ensure form is reset
+        if (addReminderModalEl) {
+            addReminderModalEl.addEventListener('show.bs.modal', function() {
+                resetForm();
+                // Set the title for "Add New Reminder" specifically if it was changed by an edit flow (if edit is re-introduced)
+                const modalTitle = document.getElementById('addReminderModalLabel');
+                if(modalTitle) modalTitle.textContent = 'Add New Reminder';
+            });
+        }
+
+
+        if (saveReminderButton) {
+             saveReminderButton.addEventListener('click', async function () {
+                clearModalValidationMessages();
+                const payload = {
+                    title: document.getElementById('reminderTitle').value.trim(),
+                    date: document.getElementById('reminderDate').value,
+                    time: document.getElementById('reminderTime').value,
+                    notes: document.getElementById('reminderNotes').value.trim(),
+                    priority: document.getElementById('reminderPriority').value
+                };
+
+                console.log('Client-side: Payload being sent to backend:', payload); 
+
+
+                // Basic front-end validation (mirroring backend for better UX)
+                let isValid = true;
+                if (!payload.title) {
+                    displayModalValidationErrors({ title: ["Title is required"] });
+                    isValid = false;
+                }
+                if (!payload.date) {
+                     displayModalValidationErrors({ ... (modalFormErrorDiv?.textContent ? {form: modalFormErrorDiv.textContent} : {}), date: ["Valid date is required"] });
+                    isValid = false;
+                }
+                if (!payload.time) {
+                    displayModalValidationErrors({... (modalFormErrorDiv?.textContent ? {form: modalFormErrorDiv.textContent} : {}), time: ["Time is required"] });
+                    isValid = false;
+                }
+                 if (!payload.priority) {
+                    displayModalValidationErrors({... (modalFormErrorDiv?.textContent ? {form: modalFormErrorDiv.textContent} : {}), priority: ["Priority is required"] });
+                    isValid = false;
+                }
+
+
+                if (!isValid) return;
+
+
+                try {
+                    const response = await fetch('/api/v1/reminders', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    const result = await response.json();
+                    if (!response.ok) {
+                         if (response.status === 401) window.location.href = '/login';
+                        if (result.details) { 
+                            displayModalValidationErrors(result.details);
+                        } else if (modalFormErrorDiv) {
+                            modalFormErrorDiv.textContent = result.message || 'Failed to save reminder.';
+                        }
+                        throw new Error(result.message || 'Failed to save reminder.');
+                    }
+                    displayApiMessage(result.message || 'Reminder saved successfully!', 'success');
+                    addReminderBsModal.hide(); // This will trigger 'hidden.bs.modal' which calls resetForm
+                    fetchAndDisplayReminders();
+                } catch (error) {
+                    console.error('Error saving reminder:', error);
+                    if (modalFormErrorDiv && !modalFormErrorDiv.textContent && !document.querySelector('.is-invalid')) {
+                         modalFormErrorDiv.textContent = error.message || 'An unexpected error occurred.';
+                    }
+                }
+            });
+        }
+        
+        remindersListDiv.addEventListener('click', function(event) {
+             if (event.target.classList.contains('delete-reminder-btn') || event.target.closest('.delete-reminder-btn')) {
+                const button = event.target.closest('.delete-reminder-btn');
+                reminderIdToDelete = button.dataset.reminderId;
+                const reminderTitle = button.dataset.reminderTitle;
+                if(deleteReminderModalBody) deleteReminderModalBody.textContent = `Are you sure you want to delete the reminder: "${reminderTitle}"? This action cannot be undone.`;
+                deleteConfirmBsModal.show();
+            }
+        });
+
+        if (confirmDeleteReminderButton) {
+            confirmDeleteReminderButton.addEventListener('click', async function() {
+                if (!reminderIdToDelete) return;
+                try {
+                    const response = await fetch('/api/v1/reminders', {
+                        method: 'DELETE',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ reminderId: reminderIdToDelete })
+                    });
+                    const result = await response.json();
+                    if (!response.ok) {
+                        if (response.status === 401) window.location.href = '/login';
+                        throw new Error(result.message || 'Failed to delete reminder.');
+                    }
+                    displayApiMessage(result.message || 'Reminder deleted successfully!', 'success');
+                    fetchAndDisplayReminders();
+                } catch (error) {
+                    console.error('Error deleting reminder:', error);
+                    displayApiMessage(`Error: ${error.message}`, 'danger');
+                } finally {
+                    deleteConfirmBsModal.hide(); 
+                    reminderIdToDelete = null;
+                }
+            });
+        }
+        
+        if (confirmSignOutButton) {
+             confirmSignOutButton.addEventListener('click', async () => {
+                try {
+                    const response = await fetch('/api/v1/logout', {
+                        method: 'DELETE',
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+                    const result = await response.json();
+                    if (response.ok && result.success) {
+                        window.location.href = '/login?message=' + encodeURIComponent(result.message || 'You have been logged out.');
+                    } else {
+                        alert('Logout failed: ' + (result.message || 'An unknown error occurred.'));
+                    }
+                } catch (error) {
+                    console.error('Client-side error during logout:', error);
+                    alert('An error occurred while trying to log out. Please check your connection and try again.');
+                }
+            });
+        }
+        
         function escapeHTML(str) {
+            if (typeof str !== 'string') return '';
             const div = document.createElement('div');
             div.appendChild(document.createTextNode(str));
             return div.innerHTML;
         }
 
-        renderReminders();
+        fetchAndDisplayReminders();
     });
-</script>
-<style>
-    /* Optional: Custom shadows for priority borders for better visibility */
-    .shadow-danger-sm { box-shadow: 0 .125rem .25rem rgba(220, 53, 69, .4) !important; }
-    .shadow-warning-sm { box-shadow: 0 .125rem .25rem rgba(255, 193, 7, .4) !important; }
-    .shadow-success-sm { box-shadow: 0 .125rem .25rem rgba(25, 135, 84, .4) !important; }
-    .card.opacity-75 { /* Ensure content in completed cards is also somewhat faded */
-      color: #6c757d; /* Bootstrap's text-muted color */
-    }
-    .card.opacity-75 .card-title,
-    .card.opacity-75 .card-subtitle,
-    .card.opacity-75 .card-text,
-    .card.opacity-75 .badge {
-        color: #6c757d !important; /* Override badge colors if needed */
-    }
-    .card.opacity-75 .badge {
-        opacity: 0.7;
-    }
-    /* Ensure sidebar takes up full height on medium and up, and scrolls independently on small screens if content overflows */
-    @media (min-width: 768px) {
-      #sidebar {
-        height: 100vh !important;
-        position: sticky;
-        top: 0;
-        overflow-y: auto;
-      }
-      main.overflow-auto {
-          height: 100vh;
-      }
-    }
-    /* Adjust sidebar for smaller screens if needed */
-    @media (max-width: 767.98px) {
-      #sidebar {
-        flex-direction: row !important; /* Default is row for small screens */
-        width: 100% !important;
-        height: auto !important; /* Allow height to adjust to content */
-        overflow-y: visible; /* Prevent double scrollbars */
-      }
-      #sidebar > a { /* Logo area */
-        margin-bottom: 0 !important; /* Remove bottom margin for row layout */
-      }
-       #sidebar .nav-pills {
-        flex-direction: row !important; /* Ensure nav items are in a row */
-        flex-wrap: wrap; /* Allow wrapping if too many items */
-        justify-content: space-around !important; /* Distribute items */
-      }
-      #sidebar .nav-item, #sidebar li {
-          flex-basis: auto; /* Allow items to size based on content */
-          margin-bottom: 0.5rem; /* Spacing between items if they wrap */
-      }
-      .sidebar-footer {
-          width: 100%;
-          margin-top: 1rem !important; /* Add some space above sign out button */
-      }
-      main.overflow-auto {
-          height: auto; /* Adjust main content height */
-      }
-    }
-</style>
-
-<%- include('partials/footer') %>
+    </script>
+</body>
+</html>
