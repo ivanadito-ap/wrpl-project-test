@@ -85,11 +85,10 @@ app.post("/api/v1/login", controller.postLogin);
 app.post("/api/v1/register", controller.postRegister);
 app.post("/api/v1/jobs", isAuthenticated, controller.postSubmitJob);
 app.post("/api/v1/contacts", isAuthenticated, controller.postSubmitContact);
-app.post("/api/v1/reminders", isAuthenticated, (req, res) => {
-  console.log("Authenticated user_id:", req.session.user_id);
-  console.log(req.body);
-  res.status(501).json({ message: "Reminder functionality not yet implemented." });
-});
+app.post("/api/v1/reminders", isAuthenticated, controller.postReminder);
+app.get("/api/v1/reminders", isAuthenticated, controller.getReminders);
+app.delete("/api/v1/reminders", isAuthenticated, controller.deleteReminder);
+
 
 // DELETE routes - Corrected
 // The controller.ts in the Canvas defines deleteLogout, deleteContactAPI, and deleteJobAPI.
