@@ -120,6 +120,36 @@ export class Service {
                 return { message: error.message || 'Error fetching contacts', status: 500, isError: true, data: null };
             }
         });
+        this.postReminder = (userId, title, date, time, notes, priority) => __awaiter(this, void 0, void 0, function* () {
+            try {
+                yield this.repository.postReminder(userId, title, date, time, notes, priority);
+                return { message: 'Reminder created successfully', status: 201, isError: false, data: null };
+            }
+            catch (error) {
+                console.error("Error creating reminder:", error);
+                return { message: error.message || 'Error creating reminder', status: 500, isError: true, data: null };
+            }
+        });
+        this.getReminders = (userId) => __awaiter(this, void 0, void 0, function* () {
+            try {
+                const reminders = yield this.repository.getReminders(userId);
+                return { message: 'success', status: 200, isError: false, data: reminders };
+            }
+            catch (error) {
+                console.error("Error fetching reminders:", error);
+                return { message: error.message || 'Error fetching reminders', status: 500, isError: true, data: null };
+            }
+        });
+        this.deleteReminder = (userId, reminderId) => __awaiter(this, void 0, void 0, function* () {
+            try {
+                yield this.repository.deleteReminder(userId, reminderId);
+                return { message: 'Reminder deleted successfully', status: 200, isError: false, data: null };
+            }
+            catch (error) {
+                console.error("Error deleting reminder:", error);
+                return { message: error.message || 'Error deleting reminder', status: 500, isError: true, data: null };
+            }
+        });
         this.repository = new Repository(db);
     }
     // Add this to your Service class in server/api/service/service.ts

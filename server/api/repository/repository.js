@@ -7,9 +7,15 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-import { usersTable, jobsTable, countryIdsTable, recruiterContactsTable, applicationStatusEnum } from '../../db/schema.js';
+import { usersTable, jobsTable, countryIdsTable, recruiterContactsTable, applicationStatusEnum, ReminderTable } from '../../db/schema.js';
 import { NeonDbError } from "@neondatabase/serverless";
 import { and, eq } from "drizzle-orm";
+export var Priority;
+(function (Priority) {
+    Priority["LOW"] = "low";
+    Priority["MEDIUM"] = "medium";
+    Priority["HIGH"] = "high";
+})(Priority || (Priority = {}));
 export class Repository {
     constructor(db) {
         this.deleteContact = (user_id, contact_email) => __awaiter(this, void 0, void 0, function* () {
@@ -76,6 +82,87 @@ export class Repository {
             catch (error) {
                 console.log(error);
                 throw new Error("An error occured during database call.");
+            }
+        });
+        // Add this to your Repository class in server/api/repository/repository.ts
+        this.getJobDetails = (user_id, company_name, applied_position, date_applied) => __awaiter(this, void 0, void 0, function* () {
+            try {
+                const jobDetails = yield this.db
+                    .select({
+                    companyName: jobsTable.company_name,
+                    appliedPosition: jobsTable.applied_position,
+                    companyAddress: jobsTable.company_address,
+                    dateApplied: jobsTable.date_applied,
+                    countryId: jobsTable.country_id,
+                    countryName: countryIdsTable.country_name,
+                    companyWebsite: jobsTable.company_website,
+                    statusId: jobsTable.status_id,
+                    additionalNotes: jobsTable.additional_notes,
+                    createdAt: jobsTable.created_at,
+                    updatedAt: jobsTable.updated_at
+                })
+                    .from(jobsTable)
+                    .leftJoin(countryIdsTable, eq(jobsTable.country_id, countryIdsTable.country_id))
+                    .where(and(eq(jobsTable.user_id, user_id), eq(jobsTable.company_name, company_name), eq(jobsTable.applied_position, applied_position), eq(jobsTable.date_applied, date_applied)))
+                    .limit(1); // Ensures only one record is returned
+                if (jobDetails.length > 0) {
+                    return jobDetails[0];
+                }
+                return null; // Or throw an error if job not found
+            }
+            catch (error) {
+                console.error("Error fetching job details from repository:", error);
+                throw new Error("An error occurred during database call for job details.");
+            }
+        });
+        this.postReminder = (userId, title, date, time, notes, priority) => __awaiter(this, void 0, void 0, function* () {
+            try {
+                yield this.db
+                    .insert(ReminderTable)
+                    .values({
+                    user_id: userId,
+                    title: title,
+                    date: date,
+                    time: time,
+                    notes: notes,
+                    priority: priority,
+                });
+            }
+            catch (error) {
+                console.log(error);
+                throw new Error("An error occurred during database call for posting reminder.");
+            }
+        });
+        this.getReminders = (userId) => __awaiter(this, void 0, void 0, function* () {
+            try {
+                const reminders = yield this.db
+                    .select({
+                    reminderId: ReminderTable.reminder_id,
+                    title: ReminderTable.title,
+                    date: ReminderTable.date,
+                    time: ReminderTable.time,
+                    notes: ReminderTable.notes,
+                    priority: ReminderTable.priority,
+                    createdAt: ReminderTable.created_at,
+                })
+                    .from(ReminderTable)
+                    .where(eq(ReminderTable.user_id, userId));
+                return reminders;
+            }
+            catch (error) {
+                console.log(error);
+                throw new Error("An error occurred during database call for fetching reminders.");
+            }
+        });
+        this.deleteReminder = (userId, reminderId) => __awaiter(this, void 0, void 0, function* () {
+            try {
+                yield this.db
+                    .delete(ReminderTable)
+                    .where(and(eq(ReminderTable.user_id, userId), eq(ReminderTable.reminder_id, reminderId)));
+            }
+            catch (error) {
+                console.log(error);
+                throw new Error("An error occurred during database call for deleting reminder.");
             }
         });
         this.db = db;
@@ -165,39 +252,6 @@ export class Repository {
             }
             ;
             return;
-        });
-    }
-    // Add this to your Repository class in server/api/repository/repository.ts
-    getJobDetails(user_id, company_name, applied_position, date_applied) {
-        return __awaiter(this, void 0, void 0, function* () {
-            try {
-                const jobDetails = yield this.db
-                    .select({
-                    companyName: jobsTable.company_name,
-                    appliedPosition: jobsTable.applied_position,
-                    companyAddress: jobsTable.company_address,
-                    dateApplied: jobsTable.date_applied,
-                    countryId: jobsTable.country_id,
-                    countryName: countryIdsTable.country_name, // Fetched from join
-                    companyWebsite: jobsTable.company_website,
-                    statusId: jobsTable.status_id,
-                    additionalNotes: jobsTable.additional_notes,
-                    createdAt: jobsTable.created_at,
-                    updatedAt: jobsTable.updated_at
-                })
-                    .from(jobsTable)
-                    .leftJoin(countryIdsTable, eq(jobsTable.country_id, countryIdsTable.country_id))
-                    .where(and(eq(jobsTable.user_id, user_id), eq(jobsTable.company_name, company_name), eq(jobsTable.applied_position, applied_position), eq(jobsTable.date_applied, date_applied)))
-                    .limit(1); // Ensures only one record is returned
-                if (jobDetails.length > 0) {
-                    return jobDetails[0];
-                }
-                return null; // Or throw an error if job not found
-            }
-            catch (error) {
-                console.error("Error fetching job details from repository:", error);
-                throw new Error("An error occurred during database call for job details.");
-            }
         });
     }
 }

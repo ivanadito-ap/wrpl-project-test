@@ -1,5 +1,6 @@
 import { sql } from "drizzle-orm";
 import { pgTable, varchar, uuid, timestamp, date, pgEnum, smallint, primaryKey } from "drizzle-orm/pg-core";
+export const priorityEnum = pgEnum('priority', ['low', 'medium', 'high']);
 export const usersTable = pgTable("users", //TODO: REPLACE THIS WITH FIREBASE
 {
     user_id: uuid().default(sql `gen_random_uuid()`).primaryKey().notNull(),
@@ -22,7 +23,7 @@ export const applicationStatusEnum = pgEnum('application_status', [
     "Needs follow-up"
 ]);
 export const jobsTable = pgTable("job_applications", {
-    user_id: uuid().references(() => usersTable.user_id).notNull(),
+    user_id: varchar().notNull(),
     company_name: varchar({ length: 255 }).notNull(),
     applied_position: varchar({ length: 255 }).notNull(),
     company_address: varchar({ length: 255 }),
@@ -45,7 +46,7 @@ export const jobsTable = pgTable("job_applications", {
     })
 ]));
 export const recruiterContactsTable = pgTable("recruiter_contacts", {
-    user_id: uuid().references(() => usersTable.user_id).notNull(),
+    user_id: varchar().notNull(),
     name: varchar({ length: 255 }).notNull(),
     company_name: varchar({ length: 255 }).notNull(),
     role_in_company: varchar({ length: 255 }).notNull(),
@@ -63,3 +64,13 @@ export const recruiterContactsTable = pgTable("recruiter_contacts", {
         ]
     })
 ]));
+export const ReminderTable = pgTable("reminders", {
+    reminder_id: uuid().default(sql `gen_random_uuid()`).primaryKey().notNull(),
+    user_id: varchar().notNull(),
+    title: varchar({ length: 255 }).notNull(),
+    date: date().notNull(),
+    time: varchar({ length: 10 }).notNull(),
+    notes: varchar({ length: 255 }),
+    priority: priorityEnum().notNull().default('low'),
+    created_at: timestamp().defaultNow().notNull(),
+});
