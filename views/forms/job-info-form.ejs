@@ -136,7 +136,8 @@
 
         // --- Populate Country Dropdown ---
         // 'countries' is passed from the server via res.render() in router.js
-        const countriesData = <%- JSON.stringify(typeof countries !== 'undefined' ? countries : []) %>;
+        const countriesData = <%
+        - JSON.stringify(typeof countries !== 'undefined' ? countries : []) %>;
         const selectedCountry = "<%- typeof formData !== 'undefined' ? formData.country : '' %>";
 
         if (countrySelect && countriesData.length > 0) {

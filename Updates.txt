@@ -1,4 +1,0 @@
-#This notepad serves as a catalog of what is update or added in this pull request
-
-1. Completed all forms, so that now input data can be sent to the backend. 
-2. Changed the name of 'signin' to 'Login' and 'signup' to 'Register.
